@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
+import os
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY_SECRET_KEY_In_this_app_till_now_for_n00ne-descovery'
@@ -510,4 +512,6 @@ def subscribe_employer():
 
 
 if __name__ == "__main__":
-    Flask.run(app, host='0.0.0.0')
+    port = int(os.getenv('PORT'), '5000')
+    #We are getting the port where our server is running, else we use the 5000
+    Flask.run(app, host='0.0.0.0', port = port)
