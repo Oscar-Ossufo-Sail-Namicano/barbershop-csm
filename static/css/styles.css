@@ -1,0 +1,627 @@
+@font-face {
+    font-family: "MagnisaSans Regular";
+    src: url("../fonts/MagnisaSans/MagnisaSans-Regular.otf") format("opentype"), url("../fonts/MagnisaSans/MagnisaSans-Regular.ttf") format("truetype");
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Hand:wght@400..700&display=swap');
+
+:root {
+    /*Colors*/
+    --primary-color: #F66232;
+    --secondary-color: #604266;
+    --inactive-color: #D9D6D6;
+    --section-color: #212627;
+    --body-black-color: #171A1B;
+    --container-color: #2F3233;
+    --white-color: #FFFFFF;
+
+    /*Tipography and fonts*/
+    --normal-font: "MagnisaSans Regular", Sans-Serif;
+    --title-font: "Edu AU VIC WA NT Hand", cursive;
+    --big-font-size: 4rem;/*64px*/
+    --h1-font-size: 2.25rem;/*36px*/
+    --h2-font-size: 1.5rem;/*24px*/
+    --h3-font-size: 1.25rem;/*20px*/
+    --normal-font-size: 1rem;/*16px*/
+    --small-font-size: 0.875rem;/*14px*/
+
+    /*---------------FONT WEIGHT-------------------*/
+    --font-light: 300;
+    --font-regular: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-extrabold: 1000;
+
+    /*----------------z-indexes-------------------*/
+    --z-fixed: 100;
+    --z-negative: -1;
+}
+
+
+@media screen and (max-width: 860px) {
+    :root {
+        --big-font-size: 3rem; /*32px*/
+        --h1-font-size: 1.5rem; /*24px*/
+        --h2-font-size: 1.25rem; /*20px*/
+        --h3-font-size: 1rem; /*16px*/
+        --normal-font-size: 0.938rem; /*15px*/
+        --small-font-size: 0.813rem; /*13px*/
+    }
+}
+
+
+/*General sttings*/
+*, ::before, ::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+img {
+    width: 100%;
+    height: auto;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: var(--white-color);
+}
+
+body {
+    font-family: var(--normal-font);
+    font-size: var(--normal-font-size);
+    background-color: var(--body-black-color);
+    color: var(--white-color);
+}
+
+.interface {
+    max-width: 1200px;
+    padding: 2rem 2rem 0;
+    margin: 0 auto;
+}
+
+.flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section_title h1 {
+    font-family: var(--title-font);
+    font-size: var(--h1-font-size);
+    font-weight: var(--font-semibold);
+    line-height: var(--h1-font-size);
+    color: var(--primary-color);
+    text-align: center;
+}
+
+.section_title span{
+    display: block;
+    
+}
+
+h1, h2, h3, p {
+    margin-bottom: 2rem;
+}
+
+
+/*HEADER STILIZATION*/
+header {
+    background-color: var(--body-black-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: var(--z-fixed);
+    box-shadow: 0 2px 3px var(--container-color);
+}
+header .interface {
+    padding: 0.4rem 2rem;
+}
+.logo img{
+    width: 50px;
+}
+
+header .nav ul li {
+    display: inline-block;
+    border: none;
+}
+
+.nav_link {
+    margin: 10px 20px;
+    text-transform: uppercase;
+    color: var(--white-color);
+    transition: .4s;
+    padding-bottom: .2rem;
+}
+
+.nav_link:hover {
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.btn {
+    padding: 0.5rem 1.25rem;
+    color: var(--white-color);
+    text-transform: uppercase;
+    font-size: var(--normal-font-size);
+    font-weight: var(--font-extrabold);
+    letter-spacing: 0.1em;
+    border-radius: 10px;
+    outline: none;
+    border: 1px solid var(--inactive-color);
+    cursor: pointer;
+    transition: .4s
+}
+
+.btn:hover {
+    background-color: var(--white-color);
+    color: var(--primary-color);
+    border: none;
+}
+
+/*--------------header menu mobile----------------*/
+.menu-symbol {
+    display: none;
+    cursor: pointer;
+}
+
+.menu-symbol i {
+    font-size: 30px;
+    color: var(--cor1);
+}
+
+
+.mobile-menu {
+    background-color: var(--section-color);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 101;
+    width: 0;
+    overflow: hidden;
+    transition: .2s;
+}
+
+.mobile-menu.open-menu {
+    width: 50%;
+}
+
+.mobile-menu nav ul {
+    text-align: center;
+}
+
+.mobile-menu nav ul li {
+    display: block;
+}
+
+.mobile-menu nav ul a {
+    font-weight: 600;
+    padding: 20px 0;
+    color: #fff;
+    display: block;
+}
+
+.mobile-menu nav ul a:hover {
+    background-color: var(--white-color);
+}
+
+.mobile-menu .close-menu-button {
+    padding: 20px 8%;
+}
+
+.mobile-menu .close-menu-button i {
+    color: var(--cor1);
+    font-size: 25px;
+    font-weight: 600;
+}
+/*-----------MAIN START----------*/
+
+
+main .btn {
+    background-color: var(--primary-color);
+    border: none;
+}
+
+/*-----------HERO START------------*/
+
+.hero .section_title h1 {
+    font-family: var(--title-font);
+    font-size: var(--big-font-size);
+    font-weight: var(--font-medium);
+    line-height: var(--big-font-size);
+}
+
+.hero {
+    width: 100%;
+    height: 100vh;
+    text-align: center;
+    background-color: var(--container-color);
+    overflow: hidden;
+    border-radius: 0 0 250px 0;
+    
+}
+
+.hero .hero_image, .hero .hero_content {
+    height: 97vh;
+    font-size: var(--h3-font-size);
+}
+
+.hero .hero_image img, .hero .hero_content {
+    width: 100%;
+    height: 100%;
+    
+}
+
+/*Services*/
+.services {
+    width: 100%;
+}
+
+.services .interface {
+    text-align: center;
+}
+
+.services_list {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0;
+    display: flex;
+    text-align: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    
+}
+
+.services_list .box {
+    padding: 20px;
+
+}
+
+.services_list .box .inner {
+    font-size: var(--h3-font-size);
+    font-weight: var(--font-bold);
+    padding: 1.4rem;
+    position: relative;
+}
+
+.services_list .box .inner p {
+    margin-bottom: 0;
+}
+
+.services_list .box .inner:before, .services_list .box .inner::after {
+    content: "";
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    box-sizing: border-box;
+    transition: .8s ease;
+}
+
+.services_list .box .inner:before {
+    bottom: 0;
+    left: 0;
+    border-left: 3px solid var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.services_list .box .inner::after {
+    top: 0;
+    right: 0;
+    width: 70%;
+    height: 70%;
+    border-top: 3px solid var(--primary-color);
+    border-right: 3px solid var(--primary-color);
+}
+
+
+.services_list .box .inner img {
+    width: 120px;
+    margin-bottom: 1rem;
+}
+
+/*packages*/
+.packages {
+    margin-top: 4rem;
+    border-top-left-radius: 320px;
+    border-bottom-right-radius: 320px;
+}
+
+.packages_list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.package {
+    background-color: var(--container-color);
+    color: var(--primary-color);
+    padding: 0 2rem;
+    border: none;
+    border-radius: 30px 5px 30px 5px;
+    margin: 1rem auto;
+    transition: .8s ease;
+}
+
+.package:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 7px var(--container-color);
+}
+
+.packages_list .package .package_name {
+    text-align: center;
+    padding: 1rem;
+    color: var(--white-color);
+    font-weight: var(--font-semibold);
+}
+
+.package_benefit {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 2rem auto;
+    margin-top: 0;
+}
+
+.package_benefit .bi-x, .unavailable {
+    color: #726a6a
+}
+
+.packages_list .package .package_benefit p {
+    margin-bottom: 0;
+}
+
+/*Scheduling*/
+.scheduling {
+    margin: 3rem auto;
+    margin-bottom: 0;
+    padding-bottom: 3rem;
+    background-color: var(--section-color);
+}
+
+.scheduling .section_title h1 {
+    text-align: left;
+}
+
+
+.scheduling .interface .scheduling_box {
+    margin: auto;
+    max-width: 600px;
+}
+
+.scheduling .interface .scheduling_box p {
+    padding-bottom: 1rem;
+}
+
+/*FOOTER*/
+.footer_list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-around;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.footer_data {
+    padding: 0 1rem;
+    text-align: center;
+    margin: 1rem;
+}
+
+.footer_social_btn {
+    margin-top: 1rem;
+}
+
+
+.footer_social_btn .social_icon {
+    color: var(--primary-color);
+    font-size: var(--h2-font-size);
+}
+.footer_social_btn .social_icon:hover{
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.footer_data h2{
+    font-weight: var(--font-bold);
+    font-size: var(--h2-font-size);
+    line-height: var(--h2-font-size);
+    color: var(--first-color);
+    margin-bottom: var(--mb-1);
+    text-transform: capitalize;
+}
+.footer_data p {
+    font-weight: var(--font-medium);
+    line-height: calc(var(--normal-font-size) + 10px);
+    text-align: center;
+    margin-bottom: 0;
+}
+.footer .copy{
+    text-align: center;
+    padding: 1rem 0;
+}
+.footer .copy p{
+    font-weight: var(--font-bold);
+    line-height: var(--h3-font-size);
+    margin-bottom: 0;
+}
+.footer .copy span{
+    font-size: var(--small-font-size);
+    line-height: var(--small-font-size);
+}
+
+/*----------RESPONSIVE------------------*/
+
+/*HEADER*/
+@media screen and (max-width: 1000px) {
+
+    .desktop_nav {
+        display: none;
+    }
+    .menu-symbol {
+        display: block;
+    }
+}
+
+
+/*------HERO-------------*/
+@media screen and (max-width: 612px) {
+    .hero .hero_image img {
+        display: none;
+    }
+}
+
+/*--------------LOGIN PAGE-------------------*/
+
+.login {
+    margin: 5rem auto auto;
+    width: 100%;
+    height: 90vh;
+    text-align: center;
+}
+
+.login p {
+    margin-bottom: .6rem;
+}
+
+.login .interface {
+    padding: 2rem;
+}
+
+.login .interface .section_title h1 {
+    font-family: sans-serif;
+    margin-bottom: .5rem;
+}
+
+.login .interface .section_title p {
+    color: black;
+}
+
+main .login .login_description_container, main .login .formulary_container {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    padding: 1.1rem;
+}
+
+main .login .login_description_container {
+    background-image: linear-gradient(80deg, var(--container-color), var(--secondary-color) 0%, var(--primary-color));
+    border-radius: 15px 0 0 15px;
+    width: 70%;
+}
+
+.login .login_description_container .login_description {
+    padding: 4rem 0;
+}
+
+.login .login_description_container .login_description .btn {
+    border: 1px solid var(--white-color);
+    background-color: transparent;
+}
+
+main .login .formulary_container {
+    background-color: var(--white-color);
+    border-radius: 0 15px 15px 0;
+}
+
+.formulary_container .formulary_container_content form input {
+    display: block;
+    width: 90%;
+    margin: auto;
+    margin-bottom: 1rem;
+    padding: 0.4rem;
+}
+
+.formulary_container .formulary_container_content form .entry {
+    border: none;
+    background-color: var(--inactive-color);
+}
+
+.formulary_container .formulary_container_content form .btn {
+    font-size: 0.8rem;
+    font-weight: var(--font-light);
+    border-radius: 30px;
+    width: 80%
+}
+
+.formulary_container .formulary_container_content form .btn:hover {
+    background-color: var(--container-color);
+    color: var(--white-color);
+}
+
+/*---------------- LOGIN-FOOTER----------------*/
+.login_footer {
+    margin-top: 1rem;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background-color: var(--body-black-color);
+    z-index: var(--z-fixed);
+}
+
+main .login .formulary_container_content .login_or_signup {
+    display: none;
+}
+
+/*--------------------------LOGIN RESPONSIVE IMPLEMENTATION-----------------------*/
+
+@media screen and (max-width: 900px) {
+    .login_description_container, .login_footer {
+        display: none;
+    }
+
+    main .login .formulary_container {
+        background-color: var(--white-color);
+        border-radius: 15px;
+        box-shadow: 0 0 6px var(--primary-color);
+}
+
+    main .login .formulary_container_content .login_or_signup {
+        display: block;
+    }
+}
+
+/*-------------SCHEDULING-------------*/
+.scheduling .fieldset {
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: var(--container-color);
+}
+
+.table {
+    width: 100%;
+    margin: 0  auto;
+}
+
+.table thead {
+    color: var(--primary-color);
+    font-weight: var(--font-bold);
+    font-size: 1.1rem;
+}
+
+/*-----------schedules----------*/
+.user_schedules .bottom_buttons {
+    margin: 1rem auto;
+    width: 80%;
+
+}
+.user_schedules .bottom_buttons a {
+    color: var(--primary-color);
+}
+
+/*--------admin-----------*/
+.admin .interface form {
+    width: 100%;
+    margin: 0 auto;
+}

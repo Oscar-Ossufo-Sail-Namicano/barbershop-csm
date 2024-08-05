@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+    <section class="user_schedules">
+        <div class="interface" style="margin-top: 4rem;">
+            <div class="flex bottom_buttons">
+                <a href="{{url_for('index')}}">voltar</a>
+                <a href="{{url_for('scheduling')}}">Agendar</a>
+            </div>
+            <table class="table" style="min-width: 400px; max-width: 600px; font-size: small;">
+                <thead>
+                    <tr>
+                        <td>Cód.</td> <!--Id of schedule-->
+                        <td>Serviço</td>
+                        <td>Data</td>
+                        <td>Hora</td>
+                    </tr>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            {% for info in schedule %}
+                                <td>{{info}}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+    </section>
+{% endblock %}

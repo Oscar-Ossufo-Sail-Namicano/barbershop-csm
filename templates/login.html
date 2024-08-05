@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <main>
+        <section class="login">
+            <div class=" interface flex">
+
+                <div class="login_description_container">
+                    <div class="login_description">
+                        <h1 style="margin-bottom: .2rem;">Bem Vindo!</h1>
+                        <p>Entre com os seus dados para poder ver suas agendas ou marcar. <br>Se ainda não tem conta, então clique no botão abaixo:</p><br>
+                        <a href="cadastro" class="btn">Cadastrar</a>
+                    </div>
+                </div>
+                
+                <div class="formulary_container">
+                    <div class="formulary_container_content section_title">
+                        <h1>Login</h1>
+                        <p>Entre com o seu e-mail e senha</p>
+                        {% with messages = get_flashed_messages()[0] %}
+                            {% if messages %}
+
+                                <p style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</p>
+                            {% endif %}
+                        {% endwith %}
+                        <form action="" method="post">
+                            <input class="entry" type="email" name="email" placeholder="E-mail" required>
+                            <input class="entry" type="password" name="password" placeholder="Senha" required>
+                            <input type="submit" value="Entrar" class="btn">
+                        </form>
+                        <div class="login_or_signup">
+                            <p>Ainda não tem conta?</p>
+                            <a href="/cadastro" class="btn">Cadastre-se</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

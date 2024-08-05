@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+    <section class="admin" style="margin-top: 2rem;">
+        <div class="interface";>
+            <div class="flex" id="queries_container">
+                <div class="employers_query">
+                    <a href="{{url_for('subscribe_employer')}}" style="color: blue;">Adicionar funcionario</a> <br><br>
+                    <form action="">
+                        <input type="submit" value="Listar funcionarios" name="list_employers"><br><br>
+                    </form>
+                    <form action="">
+                        <label for="id_remove_employer">Eliminar funcionario</label>
+                        <input type="search" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
+                        <input type="submit" value="Eliminar"><br><br>
+
+                    </form>
+                </div>
+                <div class="clients_query">
+                    <p>Pesquisa de clientes</p>
+                    <form action="">
+                        <label for="id_idcliente">Pesquisar por id</label>
+                        <input type="search" id="id_idcliente" name="client_id">
+                        <input type="submit" value="Pesquisar"><br><br>
+                    </form>
+                    <form action="">
+                        <label for="id_cliente_name">Pesquisar por nome</label>
+                        <input type="search" id="id_cliente_name" name="client_name">
+                        <input type="submit" value="Pesquisar">
+                    </form>
+                </div>
+                <div class="schedules_query">
+                    <p>Pesquisar uma agenda</p>
+                    <form action="">
+                        <label for="idagenda">Cod. da agenda</label>
+                        <input type="search" id="idagenda" name="schedule_id">
+                        <input type="submit" value="Pesquisar">
+                    </form>
+                </div>
+            </div> <!--queries_container id end-->
+            
+            <div class="displayer_queris">
+                <p>{{ table_title }}</p>
+                <table class="table" style="min-width: 1300px; font-size: xx-small;">
+                    <thead>
+                        
+                        <tr>
+                            {% for column_name in columns_name %}
+                                <td>{{ column_name }}</td>
+                            {% endfor %}
+                        </tr>
+                        
+                    </thead>
+                    <tbody>
+                        
+                        {% for element in data %}
+                        <tr>
+                                {% for table_data in element %}
+                                    <td>{{ table_data }}</td>
+                                {% endfor %}
+                            
+                        </tr>
+                        {% endfor %}
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </section>
+{% endblock %}

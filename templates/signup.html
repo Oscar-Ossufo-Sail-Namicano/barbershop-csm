@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <main>
+        <section class="login">
+            <div class=" interface flex">
+
+                <div class="login_description_container">
+                    <div class="login_description">
+                        <h1 style="margin-bottom: .5rem;">Bem Vindo!</h1>
+                        <p>Crie a sua conta hoje para começar a fazer o agendamento de atendimento no nosso estabelecimento de beleza e cosméticos. Além de poder agendar atendimento você poderá receber actualizações e promoções importantes.<br>Se já tem conta, entao:</p><br>
+                        <a href="login" class="btn">Entrar</a>
+                    </div>
+                </div>
+                
+                <div class="formulary_container">
+                    <div class="formulary_container_content section_title">
+                        <h1>Cadastro</h1>
+                        <p>Insira com cuidado abaixo os seus dados pessoais:</p>
+                        {% with messages = get_flashed_messages()[0] %}
+                            {% if messages %}
+                                <p style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</p>
+                            {% endif %}
+                        {% endwith %}
+                        <form action="" method="post">
+                            <input class="entry" type="text" name="name" autocomplete="off" placeholder=" Seu nome completo" required>
+                            <input class="entry" type="email" name="email" placeholder="seu e-mail" required>
+                            <input class="entry" type="tel" name="phone" placeholder="Seu número de telefone" required>
+                            <input class="entry" type="password" name="password" placeholder="Senha (no mínimo 6 caracteres)" required minlength="6">
+                            <input type="submit" value="cadastrar" class="btn">
+                        </form>
+                        <aside class="login_or_signup">
+                            <p>Já tem conta?</p>
+                            <a href="/login" class="btn">Login</a>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

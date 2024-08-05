@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+    <main>
+        <section class="scheduling">
+            <div class="interface">
+                <form action="{{ url_for('scheduling') }}" method="post">
+                    <div class="service_to_schedule">
+                        <fieldset class="fieldset">
+                            <legend>Escolha um Serviços*</legend> 
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <td>Serviço</td>
+                                            <td style="text-align: right;">Preço</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for service in services %}
+                                        <tr>
+                                            <td>
+                                                <input type="radio" name="service" value="{{ service[1] }}" id="{{ service[0] }}" required>
+                                                <label for="{{ service[0] }}">{{ service[1] }}</label>
+                                            </td>
+                                            <td style="text-align: right;"> <!--This contain the price-->
+                                                <span> {{service[2]}} </span><br>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        
+                                    </tbody>
+                                </table>
+                        </fieldset><br> <!--End services field group-->
+                        <fieldset class="fieldset">
+                            <legend>Indique a data e hora que desejas ser atendido*</legend>
+                            <label for="iddate">Data</label> <input type="date" name="date" required id="iddate" min="{{ minimum_date }}" max="{{ maximum_date }}"><br><br>
+                            <label for="idtime">Hora</label> <input type="time" name="time" required id="idtime" min="{{ min_max_time[0] }}" max="{{ min_max_time[1] }}"><br><br>
+                            <span style="font-size: small;">As horas devem estar no intervalo de {{ min_max_time[0] }} a {{ min_max_time[1] }}</span>
+                        </fieldset> <!--End date-->
+                        <div style="width: 100%; margin: 10px auto;">
+                            {% with messages = get_flashed_messages()[0] %}
+                                {% if messages %}
+                                    <span style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</span>
+                                {% endif %}
+                            {% endwith %}
+                            <input type="submit" value="Agendar" class="btn">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+{% endblock %}

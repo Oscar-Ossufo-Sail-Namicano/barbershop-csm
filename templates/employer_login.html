@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <main>
+        <section class="login">
+            <div class=" interface flex">
+
+                <div class="login_description_container">
+                    <div class="login_description">
+                        <h1>Bem Vindo!</h1>
+                        <p>Estimado/a funcionário/a, este espaço é reservado para você ver se existem agendas de clientes marcadas. Então por favo, em nenhum momento deve partilhar para terceiros informações dos nossos clientes, caso isso aconteça, corres o risco de perder acesso a esse sistema e demissão na CSM.</p>
+                    </div>
+                </div>
+                
+                <div class="formulary_container">
+                    <div class="formulary_container_content section_title">
+                        <h1 style="font-size: medium;">Portal do funcionário  da csm</h1>
+                        <p>Insira seus dados para ver agendas de clientes</p>
+                        
+                        {% with messages = get_flashed_messages()[0] %}
+                            {% if messages %}
+                                <p style="font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
+                            {% endif %}
+                        {% endwith %}
+                        <form action="" method="post">
+                            <input class="entry" type="email" name="email" placeholder="Seu email" required>
+                            <input class="entry" type="password" name="password" placeholder="Senha" required>
+                            <input type="submit" value="Entrar" class="btn">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

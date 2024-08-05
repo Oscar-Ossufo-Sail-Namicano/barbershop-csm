@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <main style="height: 120vh;" style="margin-top: 1rem;">
+        <section class="login">
+            <div class=" interface flex">
+
+                <div class="login_description_container">
+                    <div class="login_description">
+                        <h1>Advertência!</h1>
+                        <p>Senhor administrador do sistema, ao registrar este funcionário certifica que este vai de acordo com os padrões ideais de membro funcionário da CSM? Se sim, então introduza com cuidado os dados deste funcionário. Se não, opte por cancelar agora</p>
+                    </div>
+                </div>
+                
+                <div class="formulary_container">
+                    <div class="formulary_container_content section_title">
+                        <h1>Cadastro</h1>
+                        <p>Insira os dados do novo funcionário</p>
+                        {% with messages = get_flashed_messages()[0] %}
+                            {% if messages %}
+                                <p style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</p>
+                            {% endif %}
+                        {% endwith %}
+                        <form action="" method="post">
+                            <input class="entry" type="text" name="name" autocomplete="off" placeholder="Nome" required>
+                            <input class="entry" type="email" name="email" placeholder="E-mail" required>
+                            <input class="entry" type="password" name="password" placeholder="Senha" required>
+                            <input class="entry" type="tel" name="phone" placeholder="Numero de telefone" required minlength="9" maxlength="13">
+                            <input class="entry" type="text" name="document_type" placeholder="Tipo de documento" required>
+                            <input class="entry" type="text" name="document_number" placeholder="Numero de documento" required>
+
+                            <label for=""></label>
+                            <input class="entry" type="date" name="birth_date" id="idbirth_hdate" placeholder="Data de nascimento" required max="2020-01-01">
+                            
+                            <input class="entry" type="text" name="birth_place" placeholder="Local de nascimento" required>
+                            <input class="entry" type="text" name="functionalite" placeholder="Funcao na empresa" required>
+                            <input class="entry" type="text" name="contrat" placeholder="Tipo de contrato (integral/parcial)" required>
+                            
+
+                            <input type="submit" value="cadastrar" class="btn">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}
