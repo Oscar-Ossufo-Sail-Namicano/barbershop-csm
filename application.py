@@ -516,5 +516,5 @@ def subscribe_employer():
 
 if __name__ == "__main__":
     port = int(os.getenv('PORT'), '5000')
-    #p#We are getting the port where our server is running, else we use the 5000
+    #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
