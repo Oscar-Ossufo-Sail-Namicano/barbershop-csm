@@ -19,8 +19,10 @@ def index():
         cursor.execute("SELECT nome FROM users WHERE email == ?", [email])
         full_name = cursor.fetchone()[0]
         first_name = full_name.split(' ')[0]
-
+        print(full_name)
+        print(first_name)
         #askin if the user is loged in to show his name
+
         return render_template("index.html", user= first_name, logout='sair', suas_agendas = 'Minhas Agendas')
     return render_template("index.html", user='Entrar')
     
@@ -51,11 +53,12 @@ def signup():
             #Treating the name from the bad user spacing after the name and capitizing every part of name
             splited = name.split(' ')
             treated_name = ''
+
             
             if len(splited) > 1:
                 #capitilizing each part of name ('firs ... last name') in splited
-                for i in range(len(splited)):
-                    treated_name += ' ' + splited[i].capitalize()
+                for i in range(len(splited)-1):
+                    treated_name = treated_name + splited[i].capitalize() + ' ' + splited[i+1].capitalize()
 
                 cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (treated_name, email, phone, password))
                 db.commit()
@@ -512,6 +515,6 @@ def subscribe_employer():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv('PORT'), '5000')
+    #port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
-    Flask.run(app, host='0.0.0.0', port = port)
+    Flask.run(app, host='0.0.0.0')
