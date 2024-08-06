@@ -34,8 +34,8 @@
                         <fieldset class="fieldset">
                             <legend>Indique a data e hora que desejas ser atendido*</legend>
                             <label for="iddate">Data</label> <input type="date" name="date" required id="iddate" min="{{ minimum_date }}" max="{{ maximum_date }}"><br><br>
-                            <label for="idtime">Hora</label> <input type="time" name="time" required id="idtime" min="{{ min_max_time[0] }}" max="{{ min_max_time[1] }}"><br><br>
-                            <span style="font-size: small;">As horas devem estar no intervalo de {{ min_max_time[0] }} a {{ min_max_time[1] }}</span>
+                            <label for="idtime">Hora</label> <input type="time" name="time" required id="idtime" min="07:00" max="{{ min_max_time[1] }}"><br><br>
+                            <span style="font-size: small;">As horas para hoje devem estar no intervalo de {{ min_max_time[0] }} a {{ min_max_time[1] }}</span>
                         </fieldset> <!--End date-->
                         <div style="width: 100%; margin: 10px auto;">
                             {% with messages = get_flashed_messages()[0] %}
