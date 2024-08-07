@@ -143,7 +143,7 @@ def scheduling():
                 ('id_feed_hair', 'Alimentação de cabelo', '30,00MT'),
                 ('id_retouch', 'Retocagem de cabelo', '250,00MT'),
                 ('id_paint_hair', 'Pintar cabelo', '50,00MT'),
-                ('id_diamante_pack', 'Pacote diamante', '810,00MT'),
+                ('id_diamante_pack', 'Look Elite', '810,00MT'),
                 ('id_other', 'Explico no atendimento')]
     
     
