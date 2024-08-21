@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY_SECRET_KEY_In_this_app_till_now_for_n00ne-descovery'
 #Configure the database:
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ub9vjc9bm1taae:pf22e8a34c8bd7b754d506317bbbca0494bda16ca7ebf310701479f50043a4f48@ceqbglof0h8enj.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7f8dv2ca8av07'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ub9vjc9bm1taae:pf22e8a34c8bd7b754d506317bbbca0494bda16ca7ebf310701479f50043a4f48@ceqbglof0h8enj.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7f8dv2ca8av07'
 #Initialize the app with rhe sql_alchemy extension:
 #db.init_app(app)
 #Set duration of the users sessions
