@@ -546,7 +546,7 @@ def admin():
             #cursor.execute("SELECT * FROM users WHERE id == ?", [client_id])
             #client = cursor.fetchall()
             #client = db.session.execute(db.select(Users).filter_by(id=client_id)).all()
-            query = text(f"SELECT * FROM Users WHERE id == {client_id}")
+            query = text(f"SELECT * FROM Users WHERE id = {client_id}")
             client = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=client)
         
@@ -559,8 +559,8 @@ def admin():
 
             #cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
             #schedules = cursor.fetchall()
-            query = text(f"SELECT * FROM users WHERE nome LIKE '%{client_name}%'")
-            schedules = db.session.execute(query)
+            query = text(f"SELECT * FROM users WHERE nome LIKE {client_name}")
+            schedules = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
         
         elif schedule_id:
@@ -571,7 +571,7 @@ def admin():
 
             #cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
             #schedules = cursor.fetchall()
-            query = text(f"SELECT * FROM Schedules WHERE id == {schedule_id}")
+            query = text(f"SELECT * FROM Schedules WHERE id = {schedule_id}")
             schedules = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
         
@@ -674,7 +674,7 @@ def subscribe_employer():
 
 
 if __name__ == "__main__":
-    
+
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
