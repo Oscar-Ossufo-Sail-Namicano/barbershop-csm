@@ -1,26 +1,90 @@
 from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import text
 import sqlite3
 from datetime import datetime, timedelta, timezone
-
 import os
 
 
+#Initializing the extension flask_sqlalchemy
+class Base(DeclarativeBase):
+    '''
+    The base model class. When inherited it
+    converts the camel-class type to a snake-class type witch 
+    will be the name of the table in the database
+    '''
+    pass
+#db = SQLAlchemy(model_class=Base)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY_SECRET_KEY_In_this_app_till_now_for_n00ne-descovery'
+#Configure the database:
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ub9vjc9bm1taae:pf22e8a34c8bd7b754d506317bbbca0494bda16ca7ebf310701479f50043a4f48@ceqbglof0h8enj.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7f8dv2ca8av07'
+#Initialize the app with rhe sql_alchemy extension:
+#db.init_app(app)
+#Set duration of the users sessions
+db = SQLAlchemy(app)
 app.permanent_session_lifetime = timedelta(weeks=4)
 
-db = sqlite3.connect('csm_barber_data.db', check_same_thread=False)
-cursor = db.cursor()
+#Database without using flask_sqlalchemy
+#db = sqlite3.connect('csm_barber_data.db', check_same_thread=False)
+#cursor = db.cursor()
+
+
+################## Models classes #######################:
+class Users(db.Model):
+    '''
+    It's creating the table users in database
+    '''
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    telefone = db.Column(db.String(150), nullable=False, unique=True)
+    senha = db.Column(db.String(150), nullable=False)
+    date_subscribed = db.Column(db.DateTime, default=datetime.utcnow)
+    schedules = db.relationship('Schedules', backref='users')
+
+class Schedules(db.Model):
+    '''
+    It's creating the table schedules in database
+    '''
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    servico = db.Column(db.String(150), nullable=False, unique=True)
+    data = db.Column(db.String(150), nullable=False, unique=True)
+    hora = db.Column(db.String(150), nullable=False)
+
+class Employers(db.Model):
+    '''
+    It's creating the table schedules in database
+    '''
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String, nullable=False)
+    telefone = db.Column(db.String(150), nullable=False, unique=True)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    senha = db.Column(db.String(150), nullable=False)
+    tipo_documento = db.Column(db.String(150), nullable=False)
+    numero_documento = db.Column(db.String(150), nullable=False)
+    data_nascimento = db.Column(db.String(150), nullable=False)
+    local_nascimento = db.Column(db.String(150), nullable=False)
+    funcao = db.Column(db.String(150), nullable=False)
+    contrato = db.Column(db.String(150), nullable=False)
+
+################## End Models classes #######################:
 
 @app.route("/")
 def index():
     if 'user_email' in session:
         email = session['user_email']
-        cursor.execute("SELECT nome FROM users WHERE email == ?", [email])
-        full_name = cursor.fetchone()[0]
+        #cursor.execute("SELECT nome FROM users WHERE email == ?", [email])
+        full_name = db.session.execute(db.select(Users.nome).filter_by(email=email)).scalar_one()
+
+        #full_name = cursor.fetchone()[0]
         first_name = full_name.split(' ')[0]
-        print(full_name)
-        print(first_name)
+        #print(full_name)
+        #print(first_name)
         #askin if the user is loged in to show his name
 
         return render_template("index.html", user= first_name, logout='sair', suas_agendas = 'Minhas Agendas')
@@ -37,8 +101,9 @@ def signup():
         phone = request.form.get('phone')
         password = request.form.get('password')
         
-        cursor.execute("SELECT email, telefone FROM users")
-        emails = cursor.fetchall()
+        #cursor.execute("SELECT email, telefone FROM users")
+        emails = db.session.execute(db.select(Users.email, Users.telefone)).all()
+        #emails = cursor.fetchall()
 
         for i in emails:
             if i[0] == email or i[1] == phone:
@@ -60,17 +125,33 @@ def signup():
                 for i in range(len(splited)-1):
                     treated_name = treated_name + splited[i].capitalize() + ' ' + splited[i+1].capitalize()
 
-                cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (treated_name, email, phone, password))
-                db.commit()
+                #cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (treated_name, email, phone, password))
+                #db.commit()
+                user = Users(
+                    nome = name,
+                    email = email,
+                    telefone = phone,
+                    senha = password
+                )
+                db.session.add(user)
+                db.session.commit()
 
                 session['user_email'] = email
                 session.permanent = True
                 return redirect(url_for('index'))
             
-            #Inserting in to database the data
+            #Inserting in to database the data if if the user gives only the first name
             name = name.capitalize()
-            cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (name, email, phone, password))
-            db.commit()
+            #cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (name, email, phone, password))
+            #db.commit()
+            user = Users(
+                nome = name,
+                email = email,
+                telefone = phone,
+                senha = password
+            )
+            db.session.add(user)
+            db.session.commit()
 
             #saving the email and name on session
             session['user_email'] = email
@@ -93,8 +174,10 @@ def login():
     elif request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
-        cursor.execute("SELECT email, senha FROM users WHERE email == ? AND senha == ?", (email, password))
-        data = cursor.fetchall()
+        #cursor.execute("SELECT email, senha FROM users WHERE email == ? AND senha == ?", (email, password))
+        #data = cursor.fetchall()
+        data = db.session.execute(db.select(Users.email, Users.senha).filter_by(email=email, senha=password)).all()
+        #print(data[0])
 
         
         if email and password:
@@ -156,10 +239,11 @@ def scheduling():
         email_in_session = session['user_email']
         #we're a taking the email from session to make a query asking name with it in our db
 
-        cursor.execute("SELECT id FROM users WHERE email == ?", [email_in_session])
+        #cursor.execute("SELECT id FROM users WHERE email == ?", [email_in_session])
         # Once you only gave the function (cursor.execute) a string, the string is being interpreted as list of characters.
 
-        id = cursor.fetchone()[0] #we gave [0] because it returns (n,) and we want n
+        #id = cursor.fetchone()[0] #we gave [0] because it returns (n,) and we want n
+        id = db.session.execute(db.select(Users.id).filter_by(email=email_in_session)).scalar_one()
 
         if not service or not date or not time:
             flash('Você deve preencher todos os campos.')
@@ -170,8 +254,16 @@ def scheduling():
         else:
             # Here was scheduled sucessfully Sucess
             
-            cursor.execute("INSERT INTO schedules (user_id, servico, data, hora) VALUES (?, ?, ?, ?)", (id, service, date, time))
-            db.commit()
+            #cursor.execute("INSERT INTO schedules (user_id, servico, data, hora) VALUES (?, ?, ?, ?)", (id, service, date, time))
+            #db.commit()
+            schedule = Schedules(
+                user_id = id,
+                servico = service,
+                data = date,
+                hora = time
+            )
+            db.session.add(schedule)
+            db.session.commit()
             return redirect(url_for('schedules'))
         
 
@@ -237,14 +329,17 @@ def schedules():
 
         # In the schedules table we have a foreign key 'user_id'
         # and we want to select only the schedules of this user_id
-        cursor.execute("SELECT id FROM users WHERE email == ?", [email])
-        id = cursor.fetchone()[0]
+        #cursor.execute("SELECT id FROM users WHERE email == ?", [email])
+        #id = cursor.fetchone()[0]
+        id = db.session.execute(db.select(Users.id).filter_by(email=email)).scalar_one()
 
         #We could use inner join instead of multiple queries like we are doin now
 
         # Now we can make a query from our shedukeles table filtering with the id above to get only the shedules of the curent user
-        cursor.execute("SELECT id, servico, data, hora FROM schedules WHERE user_id == ? ORDER BY data DESC, hora DESC;", [id])
-        schedules_list = cursor.fetchall()
+        #cursor.execute("SELECT id, servico, data, hora FROM schedules WHERE user_id == ? ORDER BY data DESC, hora DESC;", [id])
+        #schedules_list = cursor.fetchall()
+        schedules_list = db.session.execute(db.select(Schedules.id, Schedules.servico, Schedules.data, Schedules.hora).filter_by(user_id=id).order_by(Schedules.data.desc(), Schedules.hora.desc())).all()
+        
         return render_template('user_schedules.html', schedules = schedules_list)
     
     return redirect(url_for('login'))
@@ -255,8 +350,9 @@ def employers_space():
     if 'employer_email' in session:
         #Employer name on header
         email = session['employer_email']
-        cursor.execute("SELECT nome FROM employers WHERE email == ?", [email])
-        full_name = cursor.fetchone()[0]
+        #cursor.execute("SELECT nome FROM employers WHERE email == ?", [email])
+        #full_name = cursor.fetchone()[0]
+        full_name = db.session.execute(db.select(Employers.nome).filter_by(email=email)).scalar_one()
         first_name = full_name.split(' ')[0]
 
         if request.method == 'POST':
@@ -264,8 +360,12 @@ def employers_space():
             query_today = request.form.get('get_today_schedules')
 
             if query_date:
-                cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [query_date])
-                date_schedules = cursor.fetchall()
+                #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [query_date])
+                #date_schedules = cursor.fetchall()
+                #date_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).filter_by(Schedules.data == query_date).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
+                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data == '{query_date}' ORDER BY data, hora DESC;")
+                date_schedules = db.session.execute(query).all()
+                print(query)
                 return render_template('employers_space.html', data = date_schedules, employer = first_name, logout='sair')
             
             if query_today:
@@ -288,13 +388,19 @@ def employers_space():
                 #-----------------end current date---------------------------------------#
 
                 #Shedules list
-                cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [today_date])
-                today_schedules = cursor.fetchall()
+                #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [today_date])
+                #today_schedules = cursor.fetchall()
+                #today_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).filter_by(Schedules.data == today_date).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
+                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{today_date}' ORDER BY data, hora DESC;")
+                today_schedules = db.session.execute(query).all()
 
                 return render_template('employers_space.html', data = today_schedules, employer = first_name, logout='sair')
             
-        cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id ORDER BY data DESC, hora DESC;")
-        all_schedules = cursor.fetchall()
+        #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id ORDER BY data DESC, hora DESC;")
+        #all_schedules = cursor.fetchall()
+        #all_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
+        query = text("SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN Users ON Schedules.user_id = Users.id ORDER BY data DESC, hora DESC;")
+        all_schedules = db.session.execute(query).all()
         return render_template('employers_space.html', data = all_schedules, employer = first_name, logout='sair')
 
 
@@ -313,8 +419,9 @@ def employer_login():
         password = request.form.get("password")
 
         
-        cursor.execute("SELECT email, senha FROM employers WHERE email == ? AND senha == ?", (email, password))
-        data = cursor.fetchall()
+        #cursor.execute("SELECT email, senha FROM employers WHERE email == ? AND senha == ?", (email, password))
+        #data = cursor.fetchall()y
+        data = db.session.execute(db.select(Employers.email, Employers.senha).filter_by(email=email, senha=password))
 
         
         if email and password:
@@ -355,11 +462,13 @@ def admin():
     if request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
-        cursor.execute("SELECT email, password FROM admin WHERE email == ? AND password == ?", (email, password))
-        data = cursor.fetchall()
+        #cursor.execute("SELECT email, password FROM admin WHERE email == ? AND password == ?", (email, password))
+        #data = cursor.fetchall()
+        
 
         
         if email and password:
+            '''
             for i in data:
                 if (i[0], i[1]) == (email, password):
                     #we verify if the given email and password is registered in database'
@@ -367,6 +476,9 @@ def admin():
                     session['admin'] = email
                     session.permanent = True
                     return render_template('admin.html')
+            '''
+            if (email, password) == ('onamicanosail01@gmail.com', 'AdminNamicano'):
+                return render_template('admin.html')
 
         elif not email or not password:
             flash("Por favor, preencha todos os campos!")
@@ -404,38 +516,51 @@ def admin():
             #Getting the columns name
             columns_name = ('ID', 'Nome', 'Telefone', 'Email', 'Senha', 'Tipo_documento', 'Numero_documento', 'Data_nascimento', 'Local_nascimento', 'Funcao', 'Contrato')
 
-            cursor.execute("SELECT * FROM employers")
-            employers = cursor.fetchall()
+            #cursor.execute("SELECT * FROM employers")
+            #employers = cursor.fetchall()
+            #employers = db.session.execute(db.select(Employers)).all(),
+            query = text(f"SELECT * FROM Employers")
+            employers = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=employers)
         
         elif employer_id:
             #Getting the columns name
-            cursor.execute("SELECT nome FROM employers WHERE id == ?", [employer_id])
-            nome = cursor.fetchone()[0]
+            #cursor.execute("SELECT nome FROM employers WHERE id == ?", [employer_id])
+            #nome = cursor.fetchone()[0]
+            funcionario = db.session.execute(db.select(Employers).filter_by(id=employer_id)).scalar_one()
+            nome = funcionario.nome
             table_title = 'Eliminado funcionario/a ' + nome
 
-            cursor.execute("DELETE FROM employers WHERE id == ?", [employer_id])
-            db.commit()
+            #cursor.execute("DELETE FROM employers WHERE id == ?", [employer_id])
+            #db.commit()
+            db.session.delete(funcionario)
+            db.session.commit()
             return render_template("admin.html", table_title=table_title)
         
         elif client_id:
-            table_title = 'Consulta de cliente'
+            table_title = 'Pesquisa de cliente por id'
 
             #Getting the columns name
-            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha')
+            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
 
-            cursor.execute("SELECT * FROM users WHERE id == ?", [client_id])
-            client = cursor.fetchall()
+            #cursor.execute("SELECT * FROM users WHERE id == ?", [client_id])
+            #client = cursor.fetchall()
+            #client = db.session.execute(db.select(Users).filter_by(id=client_id)).all()
+            query = text(f"SELECT * FROM Users WHERE id == {client_id}")
+            client = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=client)
+        
         
         elif client_name:
             table_title = 'Pesquisa cliente por nome'
 
             #Getting the columns name
-            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha')
+            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
 
-            cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
-            schedules = cursor.fetchall()
+            #cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
+            #schedules = cursor.fetchall()
+            query = text(f"SELECT * FROM users WHERE nome LIKE '%{client_name}%'")
+            schedules = db.session.execute(query)
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
         
         elif schedule_id:
@@ -444,9 +569,12 @@ def admin():
             #Getting the columns name
             columns_name = ('ID', 'Cliente id', 'Servico', 'Data', 'Hora')
 
-            cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
-            schedules = cursor.fetchall()
+            #cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
+            #schedules = cursor.fetchall()
+            query = text(f"SELECT * FROM Schedules WHERE id == {schedule_id}")
+            schedules = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
+        
         
         
         #If the admin have not given the his email and password
@@ -469,8 +597,11 @@ def subscribe_employer():
         functionalite = request.form.get('functionalite')
         contrat = request.form.get('contrat')
 
-        cursor.execute("SELECT email, telefone, numero_documento FROM employers")
-        available_info = cursor.fetchall()
+        
+        #cursor.execute("SELECT email, telefone, numero_documento FROM employers")
+        #available_info = cursor.fetchall()
+        query = text("SELECT email, telefone, numero_documento FROM Employers")
+        available_info = db.session.execute(query).all()
 
         for i in available_info:
             if i[0] == email or i[1] == phone or i[2] == document_number:
@@ -490,14 +621,42 @@ def subscribe_employer():
             if len(splited) > 1:
                 for i in range(len(splited)):
                     treated_name += ' ' + splited[i].capitalize()
-                cursor.execute("INSERT INTO employers (nome, telefone, email, senha, tipo_documento, numero_documento, data_nascimento, local_nascimento, funcao, contrato) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (treated_name, phone, email, password, document_type, document_number, birth_date, birth_place, functionalite, contrat))
-                db.commit()
+                #cursor.execute("INSERT INTO employers (nome, telefone, email, senha, tipo_documento, numero_documento, data_nascimento, local_nascimento, funcao, contrato) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (treated_name, phone, email, password, document_type, document_number, birth_date, birth_place, functionalite, contrat))
+                #db.commit()
+                employer = Employers(
+                    nome = treated_name,
+                    telefone = phone,
+                    email = email,
+                    senha = password,
+                    tipo_documento = document_type,
+                    numero_documento = document_number,
+                    data_nascimento = birth_date,
+                    local_nascimento = birth_place,
+                    funcao = functionalite,
+                    contrato = contrat
+                )
+                db.session.add(employer)
+                db.session.commit()
                 return redirect(url_for('admin'))
             
             #Inserting in to database the data
             name = name.capitalize()
-            cursor.execute("INSERT INTO employers (nome, telefone, email, senha, tipo_documento, numero_documento, data_nascimento, local_nascimento, funcao, contrato) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (name, phone, email, password, document_type, document_number, birth_date, birth_place, functionalite, contrat))
-            db.commit()
+            #cursor.execute("INSERT INTO employers (nome, telefone, email, senha, tipo_documento, numero_documento, data_nascimento, local_nascimento, funcao, contrato) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (name, phone, email, password, document_type, document_number, birth_date, birth_place, functionalite, contrat))
+            #db.commit()
+            employer = Employers(
+                nome = name,
+                telefone = phone,
+                email = email,
+                senha = password,
+                tipo_documento = document_type,
+                numero_documento = document_number,
+                data_nascimento = birth_date,
+                local_nascimento = birth_place,
+                funcao = functionalite,
+                contrato = contrat
+            )
+            db.session.add(employer)
+            db.session.commit()
 
             #saving the email and name on session
             return redirect(url_for('admin'))
@@ -515,6 +674,11 @@ def subscribe_employer():
 
 
 if __name__ == "__main__":
+    
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
+
+    '''
+    app.run(host = '0.0.0.0', port='5000', debug=True)
+    '''
