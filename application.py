@@ -363,7 +363,7 @@ def employers_space():
                 #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [query_date])
                 #date_schedules = cursor.fetchall()
                 #date_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).filter_by(Schedules.data == query_date).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
-                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data == '{query_date}' ORDER BY data, hora DESC;")
+                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{query_date}' ORDER BY data, hora DESC;")
                 date_schedules = db.session.execute(query).all()
                 print(query)
                 return render_template('employers_space.html', data = date_schedules, employer = first_name, logout='sair')
