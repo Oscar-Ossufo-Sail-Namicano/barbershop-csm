@@ -353,7 +353,9 @@ def employers_space():
         #cursor.execute("SELECT nome FROM employers WHERE email == ?", [email])
         #full_name = cursor.fetchone()[0]
         full_name = db.session.execute(db.select(Employers.nome).filter_by(email=email)).scalar_one()
-        first_name = full_name.split(' ')[0]
+        first_name = full_name.split(' ')[-1]
+        print(full_name)
+        print(first_name)
 
         if request.method == 'POST':
             query_date = request.form.get('search_by_date')
@@ -674,11 +676,11 @@ def subscribe_employer():
 
 
 if __name__ == "__main__":
-
+    '''
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
-
     '''
+    
     app.run(host = '0.0.0.0', port='5000', debug=True)
-    '''
+    
