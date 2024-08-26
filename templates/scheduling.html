@@ -34,13 +34,27 @@
                         <fieldset class="fieldset">
                             <legend>Indique a data e hora que desejas ser atendido*</legend>
                             <label for="iddate">Data</label> <input type="date" name="date" required id="iddate" min="{{ minimum_date }}" max="{{ maximum_date }}"><br><br>
-                            <label for="idtime">Hora</label> <input type="time" name="time" required id="idtime" min="07:00" max="{{ min_max_time[1] }}"><br><br>
-                            <span style="font-size: small;">As horas para hoje devem estar no intervalo de {{ min_max_time[0] }} a {{ min_max_time[1] }}</span>
+                            <label for="idtime">Hora</label> <input type="time" list="timetable" name="time" required id="idtime" min="07:00" max="{{ min_max_time[1] }}", step="1800"><br><br>
+                            <datalist id="timetable">
+                                {% for time in time_list %}
+                                    <option value="{{ time }}"></option>
+                                {% endfor %}
+                            </datalist>
+                            
+                            {% if open_flag %}
+                                <span style="font-size: small;">As horas para hoje devem ser entre {{ min_max_time[0] }} a {{ min_max_time[1] }}</span>
+                            {% endif %}
+
+                            {% if closed_flag %}
+                                <span style="font-size: small;">As agendas para hoje foram encerradas!<br>Pode fazer sua agenda para amanha ou outro dia entre {{ min_max_time[0] }}hrs - {{ min_max_time[1] }}hrs</span>
+                            {% endif %}
+
+                            
                         </fieldset> <!--End date-->
                         <div style="width: 100%; margin: 10px auto;">
                             {% with messages = get_flashed_messages()[0] %}
                                 {% if messages %}
-                                    <span style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</span>
+                                    <span style="font-size: smaller; color: rgb(205, 0, 0);">{{messages}}</span><br>
                                 {% endif %}
                             {% endwith %}
                             <input type="submit" value="Agendar" class="btn">

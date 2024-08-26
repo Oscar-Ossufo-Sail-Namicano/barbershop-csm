@@ -20,8 +20,8 @@ class Base(DeclarativeBase):
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY_SECRET_KEY_In_this_app_till_now_for_n00ne-descovery'
 #Configure the database:
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ub9vjc9bm1taae:pf22e8a34c8bd7b754d506317bbbca0494bda16ca7ebf310701479f50043a4f48@ceqbglof0h8enj.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7f8dv2ca8av07'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ub9vjc9bm1taae:pf22e8a34c8bd7b754d506317bbbca0494bda16ca7ebf310701479f50043a4f48@ceqbglof0h8enj.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7f8dv2ca8av07'
 #Initialize the app with rhe sql_alchemy extension:
 #db.init_app(app)
 #Set duration of the users sessions
@@ -38,28 +38,38 @@ class Users(db.Model):
     '''
     It's creating the table users in database
     '''
+
+    utc_plus_2 = datetime.utcnow() + timedelta(hours=2)
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(150), nullable=False, unique=True)
+    email = db.Column(db.String(150), unique=True)
     telefone = db.Column(db.String(150), nullable=False, unique=True)
     senha = db.Column(db.String(150), nullable=False)
-    date_subscribed = db.Column(db.DateTime, default=datetime.utcnow)
+    data_registro = db.Column(db.DateTime, default=utc_plus_2)
     schedules = db.relationship('Schedules', backref='users')
 
 class Schedules(db.Model):
     '''
     It's creating the table schedules in database
     '''
+    utc_plus_2 = datetime.utcnow() + timedelta(hours=2)
+    utc_plus_2_str = utc_plus_2.strftime('%H:%M:%S')
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    servico = db.Column(db.String(150), nullable=False, unique=True)
-    data = db.Column(db.String(150), nullable=False, unique=True)
+    servico = db.Column(db.String(150), nullable=False)
+    data = db.Column(db.String(150), nullable=False)
     hora = db.Column(db.String(150), nullable=False)
+    processado = db.Column(db.String(10), default=utc_plus_2_str)
+    estado = db.Column(db.String(100), default='-')
+    messagem = db.column(db.Text)
 
 class Employers(db.Model):
     '''
     It's creating the table schedules in database
     '''
+    utc_plus_2 = datetime.utcnow() + timedelta(hours=2)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String, nullable=False)
     telefone = db.Column(db.String(150), nullable=False, unique=True)
@@ -71,15 +81,25 @@ class Employers(db.Model):
     local_nascimento = db.Column(db.String(150), nullable=False)
     funcao = db.Column(db.String(150), nullable=False)
     contrato = db.Column(db.String(150), nullable=False)
+    data_entrada = db.Column(db.DateTime, default=utc_plus_2)
+
+class Admins(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String, nullable=False)
+    telefone = db.Column(db.String(150), nullable=False, unique=True)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    senha = db.Column(db.String(150), nullable=False)
+    privilegios = db.Column(db.String(150))
+
 
 ################## End Models classes #######################:
 
 @app.route("/")
 def index():
-    if 'user_email' in session:
-        email = session['user_email']
+    if 'user_phone' in session:
+        phone = session['user_phone']
         #cursor.execute("SELECT nome FROM users WHERE email == ?", [email])
-        full_name = db.session.execute(db.select(Users.nome).filter_by(email=email)).scalar_one()
+        full_name = db.session.execute(db.select(Users.nome).filter_by(telefone=phone)).scalar_one()
 
         #full_name = cursor.fetchone()[0]
         first_name = full_name.split(' ')[0]
@@ -100,19 +120,36 @@ def signup():
         email = request.form.get('email')
         phone = request.form.get('phone')
         password = request.form.get('password')
+        password_confirmation = request.form.get('password_confirmation')
         
         #cursor.execute("SELECT email, telefone FROM users")
         emails = db.session.execute(db.select(Users.email, Users.telefone)).all()
         #emails = cursor.fetchall()
 
         for i in emails:
-            if i[0] == email or i[1] == phone:
-                flash("Existe essa conta. Use outro e-mail ou número de telefone")
+            if i[0] == email:
+                flash("Existe essa conta com o mesmo e-mail. Use outro e-mail!")
+                return render_template('signup.html')
+            
+            elif i[1]== phone:
+                flash("Existe essa conta com o mesmo número. Use outro número de telefone")
                 return render_template('signup.html')
 
         if not name or not email or not phone or not password:
-            flash("Por favor, preencha todos os campos!")
+            flash("Por favor, o campo de nome!")
             return render_template('signup.html')
+        
+        elif not phone:
+            flash("Por favor, preencha o campo de telefone!")
+            return render_template('signup.html')
+        
+        elif not password:
+            flash("Por favor, preencha crie uma sena!")
+            return render_template('signup.html')
+
+        elif  password != password_confirmation:
+            flash("As senhas devem ser iguais!")
+            return render_template('signup.html')    
         
         else:
             #Treating the name from the bad user spacing after the name and capitizing every part of name
@@ -136,7 +173,7 @@ def signup():
                 db.session.add(user)
                 db.session.commit()
 
-                session['user_email'] = email
+                session['user_phone'] = phone
                 session.permanent = True
                 return redirect(url_for('index'))
             
@@ -154,7 +191,7 @@ def signup():
             db.session.commit()
 
             #saving the email and name on session
-            session['user_email'] = email
+            session['user_phone'] = phone
             session.permanent = True
             return redirect(url_for('index'))
         
@@ -168,29 +205,29 @@ def login():
     #Checking if we have a session of the user
     #we are askin if we have the key: user_name in session
     #if true, it's not necessary tu put login info
-    if 'user_email' in session:
+    if 'user_phone' in session:
         return redirect(url_for('index'))
     
     elif request.method == 'POST':
-        email = request.form.get("email")
+        phone = request.form.get("phone")
         password = request.form.get("password")
         #cursor.execute("SELECT email, senha FROM users WHERE email == ? AND senha == ?", (email, password))
         #data = cursor.fetchall()
-        data = db.session.execute(db.select(Users.email, Users.senha).filter_by(email=email, senha=password)).all()
+        data = db.session.execute(db.select(Users.telefone, Users.senha).filter_by(telefone=phone, senha=password)).all()
         #print(data[0])
 
         
-        if email and password:
+        if phone and password:
             for i in data:
-                if (i[0], i[1]) == (email, password):
+                if (i[0], i[1]) == (phone, password):
                     #we verify if the given email and password is registered in database'
 
                     #we save the session for future auto login
-                    session['user_email'] = email
+                    session['user_phone'] = phone
                     session.permanent = True
                     return redirect(url_for('index'))
 
-        elif not email or not password:
+        elif not phone or not password:
             flash("Por favor, preencha todos os campos!")
             return render_template("login.html")
                 
@@ -205,8 +242,8 @@ def login():
 
 @app.route("/terminar_seccao")
 def logout():
-    if 'user_email' in session:
-        session.pop('user_email', None)
+    if 'user_phone' in session:
+        session.pop('user_phone', None)
         return redirect(url_for('index'))
     
     return redirect(url_for('index'))
@@ -229,6 +266,35 @@ def scheduling():
                 ('id_diamante_pack', 'Look Elite', '810,00MT'),
                 ('id_other', 'Explico no atendimento')]
     
+    time_list = [
+        '07:00',
+        '07:30',
+        '08:00',
+        '08:30',
+        '09:00',
+        '09:30',
+        '10:00',
+        '10:30',
+        '11:00',
+        '11:30',
+        '12:00',
+        '12:30',
+        '13:00',
+        '13:30',
+        '14:00',
+        '14:30',
+        '15:00',
+        '15:30',
+        '16:00',
+        '16:30',
+        '17:00',
+        '17:30',
+        '18:00',
+        '18:30',
+        '19:00',
+        '19:30'
+    ]
+    
     
     if request.method == 'POST':
         #gathering scheduling info
@@ -236,19 +302,29 @@ def scheduling():
         date = request.form.get('date')
         time = request.form.get('time')
 
-        email_in_session = session['user_email']
+
+        #-------- checking availabity of the date and time that the user selected --------#
+        scheduled = db.session.execute(db.select(Schedules.data, Schedules.hora).filter_by(data=date, hora=time)).all()
+        if date and time:
+            for i in scheduled:
+                if (i[0], i[1]) == (date, time):
+                    flash('Horario ocupado! Tente outro horario')
+                    return redirect(url_for('scheduling'))
+
+        phone_in_session = session['user_phone']
         #we're a taking the email from session to make a query asking name with it in our db
 
         #cursor.execute("SELECT id FROM users WHERE email == ?", [email_in_session])
         # Once you only gave the function (cursor.execute) a string, the string is being interpreted as list of characters.
 
         #id = cursor.fetchone()[0] #we gave [0] because it returns (n,) and we want n
-        id = db.session.execute(db.select(Users.id).filter_by(email=email_in_session)).scalar_one()
+        id = db.session.execute(db.select(Users.id).filter_by(telefone=phone_in_session)).scalar_one()
+
+
 
         if not service or not date or not time:
             flash('Você deve preencher todos os campos.')
             return render_template('scheduling.html')
-        
 
         
         else:
@@ -270,7 +346,7 @@ def scheduling():
     else:
         #executed if method==get
 
-        if 'user_email' not in session:
+        if 'user_phone' not in session:
             #it checks if the user has loged in
             return redirect(url_for('login'))
 
@@ -301,6 +377,7 @@ def scheduling():
 
         maximum_date = maximum_date_not_formated.strftime("%Y-%m-%d")
 
+
         curent_time_plus_10m = mozambican_date_time + timedelta(minutes=10)
         #We are adding 10 minutes to the current time for being the minimum time to make a schedule
         
@@ -308,37 +385,75 @@ def scheduling():
         static_max_time_str = static_max_time.strftime('%H:%M')
         static_max_time_obj = datetime.strptime(static_max_time_str, "%H:%M")
         #Above we were generating a static max hour
+
+        static_min_hour = datetime(2024, 8, 4, 7, 0)
+        static_min_hour_str = static_min_hour.strftime('%H:%M')
+        static_min_hour_obj = datetime.strptime(static_min_hour_str, '%H:%M')
+        
         
 
         curent_time_plus_10m_str = curent_time_plus_10m.strftime("%H:%M")
         curent_time_plus_10m_obj = datetime.strptime(curent_time_plus_10m_str, '%H:%M')
-
-        if curent_time_plus_10m_obj <= static_max_time_obj:
-            minimum_time = curent_time_plus_10m.strftime('%H:%M')
-            return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str])
         
-        #------------End working with the time and date-------------------#
+        static_minutes = datetime(2024, 8, 4, 19, 30)
+        static_minutes_str = static_minutes.strftime('%M')
+        static_minutes_obj = datetime.strptime(static_minutes_str, "%M")
+        #Above we were generating a static minutes to be ou reference (30 in 30 minutes)
+        
+        curent_time = mozambican_date_time.strftime('%H:%M')
+        curent_time_obj = datetime.strptime(curent_time, '%H:%M')
 
-        return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=['07:00', static_max_time_str])
+        curent_time_without_minutes_str = mozambican_date_time.strftime('%H')
+        curent_time_without_minutes_obj = datetime.strptime(curent_time_without_minutes_str, '%H')
+
+        current_minutes_str = mozambican_date_time.strftime('%M')
+        current_minutes_obj = datetime.strptime(current_minutes_str, '%M')
+
+        #------------End working with the time and date-------------------#
+        if curent_time_obj > static_max_time_obj or curent_time_obj < static_min_hour_obj:
+            closed_flag = True
+            return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[static_min_hour_str, static_max_time_str], time_list=time_list, closed_flag = closed_flag)
+        
+        elif curent_time_plus_10m_obj <= static_max_time_obj:
+            #It means tha the salon is not closed
+            #And the user has 10 minutes to arrive in the salon
+            open_flag = True
+            if (current_minutes_obj + timedelta(minutes=5)) >= static_minutes_obj:
+                #It means that the next available hour will be H:00min
+                
+                minimum_time = curent_time_without_minutes_obj + timedelta(minutes=60)
+                minimum_time = minimum_time.strftime('%H:%M')
+                
+                return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
+            
+            else:
+                #It means the next time will be H:30min
+                minimum_time = curent_time_without_minutes_obj + timedelta(minutes=30)
+                minimum_time = minimum_time.strftime('%H:%M')
+                return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
+        
+        
+
+        #return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=['07:00', static_max_time_str], time_list=time_list)
         
 @app.route("/agendamento/minhas_gendas")
 def schedules():
 
-    if 'user_email' in session:
-        email = session['user_email']
+    if 'user_phone' in session:
+        phone = session['user_phone']
 
         # In the schedules table we have a foreign key 'user_id'
         # and we want to select only the schedules of this user_id
         #cursor.execute("SELECT id FROM users WHERE email == ?", [email])
         #id = cursor.fetchone()[0]
-        id = db.session.execute(db.select(Users.id).filter_by(email=email)).scalar_one()
+        id = db.session.execute(db.select(Users.id).filter_by(telefone=phone)).scalar_one()
 
         #We could use inner join instead of multiple queries like we are doin now
 
         # Now we can make a query from our shedukeles table filtering with the id above to get only the shedules of the curent user
         #cursor.execute("SELECT id, servico, data, hora FROM schedules WHERE user_id == ? ORDER BY data DESC, hora DESC;", [id])
         #schedules_list = cursor.fetchall()
-        schedules_list = db.session.execute(db.select(Schedules.id, Schedules.servico, Schedules.data, Schedules.hora).filter_by(user_id=id).order_by(Schedules.data.desc(), Schedules.hora.desc())).all()
+        schedules_list = db.session.execute(db.select(Schedules.id, Schedules.servico, Schedules.data, Schedules.hora, Schedules.estado, Schedules.processado).filter_by(user_id=id).order_by(Schedules.data.desc(), Schedules.hora.desc())).all()
         
         return render_template('user_schedules.html', schedules = schedules_list)
     
@@ -561,7 +676,7 @@ def admin():
 
             #cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
             #schedules = cursor.fetchall()
-            query = text(f"SELECT * FROM users WHERE nome LIKE {client_name}")
+            query = text(f"SELECT * FROM users WHERE nome LIKE '%{client_name}%'")
             schedules = db.session.execute(query).all()
             return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
         

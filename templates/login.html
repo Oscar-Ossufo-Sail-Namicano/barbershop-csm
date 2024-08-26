@@ -16,7 +16,7 @@
                 <div class="formulary_container">
                     <div class="formulary_container_content section_title">
                         <h1>Login</h1>
-                        <p>Entre com o seu e-mail e senha</p>
+                        <p>Entre com o seu número de telefone e senha</p>
                         {% with messages = get_flashed_messages()[0] %}
                             {% if messages %}
 
@@ -24,7 +24,7 @@
                             {% endif %}
                         {% endwith %}
                         <form action="" method="post">
-                            <input class="entry" type="email" name="email" placeholder="E-mail" required>
+                            <input class="entry" type="tel" name="phone" placeholder="Número de telefone" required>
                             <input class="entry" type="password" name="password" placeholder="Senha" required>
                             <input type="submit" value="Entrar" class="btn">
                         </form>
