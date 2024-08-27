@@ -63,7 +63,7 @@ class Schedules(db.Model):
     hora = db.Column(db.String(150), nullable=False)
     processado = db.Column(db.String(10), default=utc_plus_2_str)
     estado = db.Column(db.String(100), default='-')
-    messagem = db.Column(db.Text)
+    messagem = db.Column(db.Text())
 
 class Employers(db.Model):
     '''
