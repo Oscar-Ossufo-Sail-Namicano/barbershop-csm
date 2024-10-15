@@ -1,21 +1,22 @@
 {% extends 'layout.html' %}
 
 {% block main %}
-    <section class="admin" style="margin-top: 2rem;">
+    <section class="admin" style="margin-top: 2rem; background-color: white; color: black;">
         <div class="interface";>
-            <div class="flex" id="queries_container">
+            <div style="gap: 3rem;" class="flex" id="queries_container">
                 <div class="employers_query">
-                    <a href="{{url_for('subscribe_employer')}}" style="color: blue;">Adicionar funcionario</a> <br><br>
+                    <a href="{{url_for('subscribe_employer', establishment_alias=establishment_alias)}}" style="color: blue; font-display: block; border: solid 1px black; padding: 3px 10px;">Adicionar funcionario</a> <br><br>
                     <form action="">
-                        <input type="submit" value="Listar funcionarios" name="list_employers"><br><br>
+                        <input style = "color: blue; border: solid 1px black; padding: 3px 10px; cursor: pointer;" type="submit" value="Listar funcionarios" name="list_employers"><br><br>
                     </form>
                     <form action="">
-                        <label for="id_remove_employer">Eliminar funcionario</label>
-                        <input type="search" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
-                        <input type="submit" value="Eliminar"><br><br>
+                        <label style="display: block;" for="id_remove_employer">Eliminar funcionario</label>
+                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
+                        <input style = "color: red; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Eliminar"><br><br>
 
                     </form>
                 </div>
+                <!--
                 <div class="clients_query">
                     <p>Pesquisa de clientes</p>
                     <form action="">
@@ -29,18 +30,24 @@
                         <input type="submit" value="Pesquisar">
                     </form>
                 </div>
-                <div class="schedules_query">
+            -->
+                <div style="text-align: right;" class="schedules_query">
                     <p>Pesquisar uma agenda</p>
                     <form action="">
-                        <label for="idagenda">Cod. da agenda</label>
-                        <input type="search" id="idagenda" name="schedule_id">
-                        <input type="submit" value="Pesquisar">
+                        <label style="display: block;" for="idagenda">Cod. da agenda</label>
+                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" id="idagenda" name="schedule_id">
+                        <input style = "color: blue; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Pesquisar">
                     </form>
                 </div>
             </div> <!--queries_container id end-->
             
             <div class="displayer_queris">
-                <p>{{ table_title }}</p>
+                {% with messages = get_flashed_messages()[0] %}
+                    {% if messages %}
+                        <p style="font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
+                    {% endif %}
+                {% endwith %}
+                <p style="text-align: center;">{{ table_title }}</p>
                 <table class="table" style="min-width: 1300px; font-size: xx-small;">
                     <thead>
                         

@@ -5,7 +5,7 @@
         <div class="interface" style="margin-top: 4rem;">
             <div class="flex bottom_buttons">
                 <a href="{{url_for('index')}}">voltar</a>
-                <a href="{{url_for('scheduling')}}">Agendar</a>
+                <a href="{{url_for('scheduling', establishment_alias=establishment_alias)}}">Agendar</a>
             </div>
             <table class="table" style="min-width: 400px; max-width: 600px; font-size: small;">
                 <thead>
@@ -14,8 +14,8 @@
                         <td>Serviço</td>
                         <td>Data</td>
                         <td>Hora</td>
+                        <td>Local</td>
                         <td>Estado</td>
-                        <td>Processado</td>
                         
                     </tr>
                     <tbody>

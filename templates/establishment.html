@@ -1,0 +1,134 @@
+<!Doctype html>
+<html lang="pt-pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="../static/icons/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="../static/css/styles.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <script src="../static/js/js.js" defer></script>
+
+        <meta name="description" content="Salão e barbearia csm em Lichinga, vem que a gente cuida da sua beleza">
+        <meta name="keywords" content="Salão, barbearia, Salão e barbearia csm, Lichinga, Salão unissexo, csm, Ciências sem mistérios, cienciassemmisterios.com, salaoebarbeariacsm.com, Namicano, Oscar Namicano, salaoebarbeariacsm.onrender.com">
+        <title>{{ establishment_details['name'] }}</title>
+    </head>
+    <body>
+        <header>
+            <div class="navbar interface flex">
+                <div class="logo">
+                    <a href="" target="_blank"><img src="{{establishment_details['logo_data_uri']}}" alt="{{ establishment_details['name'] }}"></a>
+                </div>
+                <nav class="desktop_nav nav">
+                    <ul>
+                        <li><a href="#" class="nav_link">Home</a></li>
+                        <li><a href="#services" class="nav_link">Nossos Serviços</a></li>
+                        <li><a href="#scheduling" class="nav_link">Agendamento</a></li>
+                        <li><a href="#contact" class="nav_link">Localize-nos</a></li>
+                        <li><a href="{{url_for('schedules')}}" class="nav_link">{{suas_agendas}}</a></li>
+                    </ul>
+                </nav> <!--Desktop menu end-->
+
+                <div>
+                    <a href="/login" class="nav_link">{{ user }}</a>
+                    <a href="{{url_for('logout')}}" style="color: rgb(192, 18, 18); font-size: 1rem;">{{logout}}</a>
+                </div> 
+                    
+                <div class="menu-symbol" id="menu-symbol">
+                    <i class="bi bi-list"></i>
+                </div>
+
+                <div class="mobile-menu" id="mobile-menu">
+                    <div class="close-menu-button">
+                        <i class="bi bi-x-lg"></i>
+                    </div>
+                    <nav>
+                        <ul>
+                            <li><a href="#" class="nav_link">Home</a></li>
+                            <li><a href="#services" class="nav_link">Nossos Serviços</a></li>
+                            <li><a href="#scheduling" class="nav_link">Agendamento</a></li>
+                            <li><a href="#contact" class="nav_link">Localize-nos</a></li>
+                            <li><a href="{{url_for('schedules')}}" class="nav_link">{{ suas_agendas }}</a></li>
+
+                        </ul>
+                    </nav>
+                </div> <!--mobile menu end-->
+                <!--<div class="overlay-box"></div>-->
+
+            </div> <!--navbar end-->
+        </header>
+        <main>
+            <section class="hero">
+                <div class="interface">
+
+                    <div class="flex">
+                        <div class="hero_image">
+                            <!--- <img src="{{ establishment_details['hero_image_uri'] }}" alt="Homem"> -->
+                            <img src="../static/images/female-4899174_1280-removebg-preview.png" alt="Homem">
+                        </div>
+                        <div class="hero_content section_title">
+                            <h1 >{{ establishment_details['name'] }}<span class="modifier_span"></span></h1>
+                            <p style="margin-bottom: .25rem;">{{ establishment_details['hero_message'] }}</p><br>
+                            <a href="{{ url_for('scheduling', establishment_alias=establishment_details['alias']) }}" class="btn">Agende seu atendimento</a>
+                        </div>
+
+                    </div>
+                </div>
+            </section> <!--hero end-->
+            <section class="packages" id="packages">
+                <div class="interface">
+                    <div class="section_title">
+                        <h1>Serviços<span>Prestados</span></h1>
+                    </div>
+                    <div class="packages_list">
+                        <div class="package">
+                            <div class="package_name">
+                                <h3>Disponivel:</h3>
+                            </div>
+                            {% for service in services %}
+                                <div class="package_benefit">
+                                    <i class="bi bi-check"></i>
+                                    <p>{{service[0]}}</p>
+                                </div>
+                            {% endfor %}              
+                    </div>
+                </div>
+            </section> <!--packages end-->
+            <section class="scheduling" id="scheduling">
+                <div class="interface">
+                    <div class="section_title">
+                        <h1>Agende seu horário<span>para atendimento</span></h1>
+                    </div>
+                    <div class="scheduling_box">
+                        <p>Através do nosso sistema informático sofisticado, agora os nossos clientes podem marcar/escolher o dia e hora em que desejam receber o seu atendimento e ainda mais indicar qual serviço desejam, bastando apenas criar conta na nossa plataforma.</p>
+                        <a href="{{ url_for('scheduling', establishment_alias=establishment_alias)}}" class="btn">Marque agora</a>
+                    </div>
+                </div>
+            </section> <!--scheduling end-->
+        </main>
+        <footer class="footer" id="contact">
+            <address class="footer_list interface">
+                <div class="footer_data">
+                    <h2>Nosso endereço</h2>
+                    <p>{{establishment_details['local_characterization']}}<br>{{establishment_details['burgh']}}<br>{{establishment_details['province']}}-{{establishment_details['district']}}</p>
+                </div>
+                <div class="footer_data">
+                    <h2>Nosso Horário</h2>
+                    <p>({{establishment_details['open_days_interval']}})<br>das {{establishment_details['open_hours']}} as {{establishment_details['close_hours']}}</p>
+                </div>
+                <div class="footer_data">
+                    <h2>Contactos</h2>
+                    <p><a href="tel:{{establishment_details['tel']}}">{{establishment_details['tel']}}</a></p>
+                    <a href="mailto:{{establishment_details['email']}}?subject=From {{establishment_details['name']}}">{{establishment_details['email']}}</a>
+                    <div class="footer_social_btn">
+                        <a href=""><i class="bi bi-facebook social_icon"></i></a>
+                    </div>
+                </div>
+            </address>
+            <div class="copy">
+                <p>{{ establishment_details['name'] }}</p>
+                <span>&copy Todos os direitos reservados <br>2024</span>
+            </div>
+        </footer>
+    </body>
+    
+</html>

@@ -4,7 +4,8 @@
     <main>
         <section class="scheduling">
             <div class="interface">
-                <form action="{{ url_for('scheduling') }}" method="post">
+                
+                <form action="{{ url_for('scheduling', establishment_alias=establishment_alias) }}" method="post">
                     <div class="service_to_schedule">
                         <fieldset class="fieldset">
                             <legend>Escolha um Serviços*</legend> 

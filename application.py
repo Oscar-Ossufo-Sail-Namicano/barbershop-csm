@@ -2,9 +2,12 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
+from flask_migrate import Migrate
 import sqlite3
 from datetime import datetime, timedelta, timezone
 import os
+import base64
+import pdfkit
 
 
 #Initializing the extension flask_sqlalchemy
@@ -20,12 +23,14 @@ class Base(DeclarativeBase):
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY_SECRET_KEY_In_this_app_till_now_for_n00ne-descovery'
 #Configure the database:
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
 #Initialize the app with rhe sql_alchemy extension:
 #db.init_app(app)
-#Set duration of the users sessions
+
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+#Set duration of the users sessions
 app.permanent_session_lifetime = timedelta(weeks=4)
 
 #Database without using flask_sqlalchemy
@@ -43,11 +48,43 @@ class Users(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(150), unique=True)
+    email = db.Column(db.String(150))
     telefone = db.Column(db.String(150), nullable=False, unique=True)
     senha = db.Column(db.String(150), nullable=False)
     data_registro = db.Column(db.DateTime, default=utc_plus_2)
     schedules = db.relationship('Schedules', backref='users')
+
+class Establishments(db.Model):
+    __tablename__ = 'establishments'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String, nullable=False)
+    apelido = db.Column(db.String(150), nullable=False, unique=True)
+    msg_boas_vindas = db.Column(db.String(500))
+    msg_secundaria = db.Column(db.String(1000))
+    #logotipo = db.Column(db.String(500))
+    horas_aberto = db.Column(db.String(50))
+    horas_fechado = db.Column(db.String(50))
+    dias_funcionamento = db.Column(db.String(150))
+    descricao_do_bairro = db.Column(db.String(300))
+    bairro = db.Column(db.String(100))
+    provincia = db.Column(db.String(100))
+    distrito = db.Column(db.String(100))
+    telefone = db.Column(db.String(100))
+    email = db.Column(db.String(150))
+    agendas = db.relationship('Schedules', backref='establishments')
+    servicos = db.relationship('Services', backref='establishments')
+    funcionarios = db.relationship('Employers', backref='establishments')
+    administrador = db.relationship('Admins', backref='establishments')
+    imagens = db.relationship('Establishments_images', backref='establishments')
+
+class Establishments_images(db.Model):
+    #The place column can have 'hero, logo' values to help positioning in the correct place
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    lugar = db.Column(db.Text, nullable=False)
+    estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
+    buffer_data = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    mimeType = db.Column(db.Text)
 
 class Schedules(db.Model):
     '''
@@ -58,6 +95,7 @@ class Schedules(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
     servico = db.Column(db.String(150), nullable=False)
     data = db.Column(db.String(150), nullable=False)
     hora = db.Column(db.String(150), nullable=False)
@@ -71,26 +109,33 @@ class Employers(db.Model):
     '''
     utc_plus_2 = datetime.utcnow() + timedelta(hours=2)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String, nullable=False)
-    telefone = db.Column(db.String(150), nullable=False, unique=True)
-    email = db.Column(db.String(150), nullable=False, unique=True)
-    senha = db.Column(db.String(150), nullable=False)
-    tipo_documento = db.Column(db.String(150), nullable=False)
-    numero_documento = db.Column(db.String(150), nullable=False)
-    data_nascimento = db.Column(db.String(150), nullable=False)
-    local_nascimento = db.Column(db.String(150), nullable=False)
-    funcao = db.Column(db.String(150), nullable=False)
-    contrato = db.Column(db.String(150), nullable=False)
+    nome = db.Column(db.String(150))
+    telefone = db.Column(db.String(150), unique=False)
+    email = db.Column(db.String(150))
+    senha = db.Column(db.String(150))
+    tipo_documento = db.Column(db.String(150))
+    numero_documento = db.Column(db.String(150))
+    data_nascimento = db.Column(db.String(150))
+    local_nascimento = db.Column(db.String(150))
+    funcao = db.Column(db.String(150))
+    contrato = db.Column(db.String(150))
     data_entrada = db.Column(db.DateTime, default=utc_plus_2)
+    estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
 
 class Admins(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String, nullable=False)
-    telefone = db.Column(db.String(150), nullable=False, unique=True)
-    email = db.Column(db.String(150), nullable=False, unique=True)
+    telefone = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
     senha = db.Column(db.String(150), nullable=False)
     privilegios = db.Column(db.String(150))
+    estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
 
+class Services(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    servico = db.Column(db.String, nullable=False)
+    preco = db.Column(db.String(150))
+    estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
 
 ################## End Models classes #######################:
 
@@ -211,6 +256,8 @@ def login():
     elif request.method == 'POST':
         phone = request.form.get("phone")
         password = request.form.get("password")
+
+        
         #cursor.execute("SELECT email, senha FROM users WHERE email == ? AND senha == ?", (email, password))
         #data = cursor.fetchall()
         data = db.session.execute(db.select(Users.telefone, Users.senha).filter_by(telefone=phone, senha=password)).all()
@@ -238,7 +285,110 @@ def login():
     else:
         #executed if request.method == get
         return render_template("login.html")
+
+#------------------ Establishment Registration: ----------------------------# 
+@app.route("/registro-de-estabelecimento", methods=['GET', 'POST'])
+def register_establishment():
+
     
+    if request.method == 'POST':
+        Establishment_name = request.form.get('Establishment_name')
+        alias = request.form.get('alias')
+        welcome_msg = request.form.get('welcome_msg')
+        open_hour = request.form.get('open_hour')
+        close_hour = request.form.get('close_hour')
+        open_days = request.form.get('open_days')
+        burgh = request.form.get('burgh')
+        burgh_description = request.form.get('burgh_description')
+        province = request.form.get('province')
+        district = request.form.get('district')
+        phone = request.form.get('phone')
+        email = request.form.get('email')
+
+
+
+        #alias = request.files['alias']
+        
+        #cursor.execute("SELECT email, telefone FROM users")
+        aliases = db.session.execute(db.select(Establishments.apelido,)).all()
+        #emails = cursor.fetchall()
+
+        for i in aliases:
+            if i[0] == alias:
+                flash("Existe estabelecimento com mesmo apelido. Tente outro apelido!")
+                return render_template('establishment_registration.html')
+
+        if not Establishment_name or not alias:
+            flash("Por favor, preencha o nome e apelido!")
+            return render_template('establishment_registration.html')  
+        
+        else:
+            #Inserting in to database the data if if the user gives only the first name
+           # Establishment_name = Establishment_name.capitalize()
+            #cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (name, email, phone, password))
+            #db.commit()
+            establishment = Establishments(
+                nome = Establishment_name,
+                apelido = alias,
+                msg_boas_vindas = welcome_msg,
+                horas_aberto = open_hour,
+                horas_fechado = close_hour,
+                dias_funcionamento = open_days,
+                bairro = burgh,
+                descricao_do_bairro = burgh_description,
+                provincia = province,
+                distrito = district,
+                telefone = phone,
+                email = email
+                
+            )
+            db.session.add(establishment)
+            db.session.commit()
+
+            establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=alias)).scalar_one()
+
+            transfer_data = {
+                'new_establishment_id': establishment_id,
+                'new_establishment_alias': alias
+
+            }
+            return render_template('admin_signup.html', transfer_data = transfer_data)
+        
+    else:
+        #if request.method == 'get'
+        return render_template("establishment_registration.html")
+#------------End Establishment Registration -----------------------#
+@app.route("/sucessfully", methods=['get', 'post'])
+def new_establishment_sucessfully():
+    if request.method == "POST":
+
+        #Adding the admin on the system:
+        establishment_id = request.form.get('establishment_id')
+        establishment_alias = request.form.get('establishment_alias')
+        admin_name = request.form.get('name')
+        admin_email = request.form.get('email')
+        admin_phone = request.form.get('phone')
+        admin_password = request.form.get('password')
+
+        data = {
+            'name': admin_name,
+            'alias': establishment_alias,
+            'phone': admin_phone,
+            'password': admin_password
+        }
+
+        new_admin = Admins(
+            nome = admin_name,
+            telefone = admin_phone,
+            email = admin_email,
+            senha = admin_password,
+            estabelecimento_id = establishment_id
+        )
+
+        db.session.add(new_admin)
+        db.session.commit()
+        return render_template('sucessfully_establishment_subscribed.html', data=data)
+    return 'Em desenvolvimento'
 
 @app.route("/terminar_seccao")
 def logout():
@@ -250,21 +400,34 @@ def logout():
     
     
     
-@app.route('/agendamento', methods=['get', 'post'])
-def scheduling():
+@app.route('/<establishment_alias>/agendamento', methods=['get', 'post'])
+def scheduling(establishment_alias):
+    establishment_alias=establishment_alias
+
+    #We are treating potencial error caused by user injecting a inexistent establisment alias
+    try:
+        establishment_alias_in_db = db.session.execute(db.select(Establishments.apelido).filter_by(apelido=establishment_alias)).scalar_one()
+        if establishment_alias_in_db:
+            pass
+    except:
+        return redirect(url_for('index'))
+    
+    establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
 
     #Bellow we set a tuples list to pass in frontend template
     #the tuples take a servive id, service name an the service price respectively
-
-    services = [('id_tranca', 'Trançar mexas/cabelo', '250-300,00MT'),
-                ('id_simple_cut', 'Escovinha/carreca...','30,00MT'),
-                ('id_france', 'Corte francês/similar', '50,00MT'),
+    '''
+    services = [('1', 'Trançar mexas/cabelo', '250-300,00MT'),
+                ('2', 'Escovinha/carreca...','30,00MT'),
+                ('3', 'Corte francês/similar', '50,00MT'),
                 ('id_wash_hair', 'Lavagem de cabelo', '100,00MT'),
                 ('id_feed_hair', 'Alimentação de cabelo', '30,00MT'),
                 ('id_retouch', 'Retocagem de cabelo', '250,00MT'),
                 ('id_paint_hair', 'Pintar cabelo', '50,00MT'),
                 ('id_diamante_pack', 'Look Elite', '810,00MT'),
                 ('id_other', 'Explico no atendimento')]
+    '''
+    services = db.session.execute(db.select(Services.id, Services.servico, Services.preco).filter_by(estabelecimento_id=establishment_id)).all()
     
     time_list = [
         '07:00',
@@ -304,36 +467,51 @@ def scheduling():
 
 
         #-------- checking availabity of the date and time that the user selected --------#
-        scheduled = db.session.execute(db.select(Schedules.data, Schedules.hora).filter_by(data=date, hora=time)).all()
+        scheduled = db.session.execute(db.select(Schedules.data, Schedules.hora).filter_by(estabelecimento_id=establishment_id, data=date, hora=time)).all()
         if date and time:
             for i in scheduled:
                 if (i[0], i[1]) == (date, time):
                     flash('Horario ocupado! Tente outro horario')
-                    return redirect(url_for('scheduling'))
-
-        phone_in_session = session['user_phone']
-        #we're a taking the email from session to make a query asking name with it in our db
-
-        #cursor.execute("SELECT id FROM users WHERE email == ?", [email_in_session])
-        # Once you only gave the function (cursor.execute) a string, the string is being interpreted as list of characters.
-
-        #id = cursor.fetchone()[0] #we gave [0] because it returns (n,) and we want n
-        id = db.session.execute(db.select(Users.id).filter_by(telefone=phone_in_session)).scalar_one()
-
+                    return redirect(url_for('scheduling', establishment_alias=establishment_alias))
 
 
         if not service or not date or not time:
             flash('Você deve preencher todos os campos.')
-            return render_template('scheduling.html')
+            return redirect(url_for('scheduling', establishment_alias=establishment_alias))
 
         
         else:
-            # Here was scheduled sucessfully Sucess
+            # Here was scheduled sucessfully
             
             #cursor.execute("INSERT INTO schedules (user_id, servico, data, hora) VALUES (?, ?, ?, ?)", (id, service, date, time))
             #db.commit()
+
+            if 'user_phone' not in session:
+            #it checks if the user has loged in
+                data = {
+                'service': service,
+                'date': date,
+                'time': time,
+                'alias': establishment_alias
+                }
+                return redirect(url_for('login', data=data))
+            
+            #here theuse is lgged in
+            phone_in_session = session['user_phone']
+            #we're a taking the email from session to make a query asking name with it in our db
+
+            #cursor.execute("SELECT id FROM users WHERE email == ?", [email_in_session])
+            # Once you only gave the function (cursor.execute) a string, the string is being interpreted as list of characters.
+            #id = cursor.fetchone()[0] #we gave [0] because it returns (n,) and we want n
+
+            #Getting the ids of the user (based on his/her phone nr) and establisment id (based on its alias)
+            #But we got the establishment id above (under function definition). in this case we comment the line of establishment_id 
+            user_id = db.session.execute(db.select(Users.id).filter_by(telefone=phone_in_session)).scalar_one()
+            #establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+
             schedule = Schedules(
-                user_id = id,
+                user_id = user_id,
+                estabelecimento_id = establishment_id,
                 servico = service,
                 data = date,
                 hora = time
@@ -345,10 +523,6 @@ def scheduling():
 
     else:
         #executed if method==get
-
-        if 'user_phone' not in session:
-            #it checks if the user has loged in
-            return redirect(url_for('login'))
 
 
         #---------------Working with the time and date------------------------#
@@ -412,7 +586,7 @@ def scheduling():
         #------------End working with the time and date-------------------#
         if curent_time_obj > static_max_time_obj or curent_time_obj < static_min_hour_obj:
             closed_flag = True
-            return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[static_min_hour_str, static_max_time_str], time_list=time_list, closed_flag = closed_flag)
+            return render_template('scheduling.html', establishment_alias=establishment_alias, services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[static_min_hour_str, static_max_time_str], time_list=time_list, closed_flag = closed_flag)
         
         elif curent_time_plus_10m_obj <= static_max_time_obj:
             #It means tha the salon is not closed
@@ -424,19 +598,19 @@ def scheduling():
                 minimum_time = curent_time_without_minutes_obj + timedelta(minutes=60)
                 minimum_time = minimum_time.strftime('%H:%M')
                 
-                return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
+                return render_template('scheduling.html', establishment_alias=establishment_alias, services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
             
             else:
                 #It means the next time will be H:30min
                 minimum_time = curent_time_without_minutes_obj + timedelta(minutes=30)
                 minimum_time = minimum_time.strftime('%H:%M')
-                return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
+                return render_template('scheduling.html', establishment_alias=establishment_alias, services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=[minimum_time, static_max_time_str], time_list=time_list, open_flag=open_flag)
         
         
 
         #return render_template('scheduling.html', services = services, minimum_date = minimum_date, maximum_date = maximum_date, min_max_time=['07:00', static_max_time_str], time_list=time_list)
         
-@app.route("/agendamento/minhas_gendas")
+@app.route("/agendamento/minhas_agendas")
 def schedules():
 
     if 'user_phone' in session:
@@ -450,27 +624,101 @@ def schedules():
 
         #We could use inner join instead of multiple queries like we are doin now
 
-        # Now we can make a query from our shedukeles table filtering with the id above to get only the shedules of the curent user
+        # Now we can make a query from our schedules table filtering with the id above to get only the shedules of the curent user
         #cursor.execute("SELECT id, servico, data, hora FROM schedules WHERE user_id == ? ORDER BY data DESC, hora DESC;", [id])
         #schedules_list = cursor.fetchall()
-        schedules_list = db.session.execute(db.select(Schedules.id, Schedules.servico, Schedules.data, Schedules.hora, Schedules.estado, Schedules.processado).filter_by(user_id=id).order_by(Schedules.data.desc(), Schedules.hora.desc())).all()
-        
+        query=text(f"select Schedules.id, Schedules.servico, Schedules.data, Schedules.hora, Establishments.nome, Schedules.estado FROM Schedules INNER JOIN Establishments ON Schedules.estabelecimento_id = Establishments.id WHERE user_id = {id} ORDER BY data DESC, hora DESC")
+        #schedules_list = db.session.execute(db.select(Schedules.id, Schedules.servico, Schedules.data, Schedules.hora, Schedules.estado, Schedules.processado).filter_by(user_id=id).order_by(Schedules.data.desc(), Schedules.hora.desc())).all()
+        schedules_list = db.session.execute(query)
         return render_template('user_schedules.html', schedules = schedules_list)
     
     return redirect(url_for('login'))
     
 
-@app.route("/funcionarios", methods=['GET', 'POST'])
-def employers_space():
-    if 'employer_email' in session:
+@app.route('/<establishment_alias>')
+def establishment_page(establishment_alias):
+    try:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+        if establishment_id:
+            pass
+    except:
+        return redirect(url_for('index'))
+
+    
+    #Bellow we're retrievin images of the establisment page
+    logo_image = Establishments_images.query.filter_by(estabelecimento_id=establishment_id, lugar='logo').first()
+    hero_image = Establishments_images.query.filter_by(estabelecimento_id=establishment_id, lugar='hero').first()
+
+    if not hero_image or not logo_image:
+        hero_data_uri = None
+        logo_data_uri = None
+
+    else:
+        logo_image_buffer = logo_image.buffer_data
+        logo_image_base64 = base64.b64encode(logo_image_buffer).decode('utf-8')
+        logo_data_uri = f'data:{logo_image.mimeType};base64, {logo_image_base64}'
+
+        hero_image_buffer = hero_image.buffer_data
+        hero_image_base64 = base64.b64encode(hero_image_buffer).decode('utf-8')
+        hero_data_uri = f'data:{logo_image.mimeType};base64, {hero_image_base64}'
+    
+
+    #Loading all services of the establisment to fill in the establisment page on the services section
+    services = db.session.execute(db.select(Services.servico).filter_by(estabelecimento_id=establishment_id)).all()
+    #Other informations of the establishment
+    query = text(f"SELECT * FROM Establishments WHERE apelido == '{establishment_alias}'")
+    establishment = db.session.execute(query).all()
+    for detail in establishment:
+        establishment_details = {
+            'name': detail[1],
+            'alias': detail[2],
+            'hero_message': detail[3],
+            'secundary_msg': detail[4],
+            'logo_data_uri': logo_data_uri,
+            'hero_data_uri': hero_data_uri,
+            'open_hours': detail[5],
+            'close_hours': detail[6],
+            'open_days_interval': detail[7],
+            'local_characterization': detail[8],
+            'burgh': detail[9],
+            'province': detail[10],
+            'district': detail[11],
+            'tel': detail[12],
+            'email': detail[13]
+        }
+    
+    if 'user_phone' in session:
+        phone = session['user_phone']
+        #cursor.execute("SELECT nome FROM users WHERE email == ?", [email])
+        full_name = db.session.execute(db.select(Users.nome).filter_by(telefone=phone)).scalar_one()
+
+        #full_name = cursor.fetchone()[0]
+        first_name = full_name.split(' ')[0]
+        #print(full_name)
+        #print(first_name)
+        #askin if the user is loged in to show his name
+
+        return render_template("establishment.html", user= first_name, logout='sair', suas_agendas = 'Minhas Agendas', establishment_details=establishment_details, services=services)
+    return render_template("establishment.html", user='Entrar', establishment_details=establishment_details)
+    #return render_template('establishment.html',establishment_alias=establishment_alias, name=establishment, services=services)
+
+
+@app.route("/<establishment_alias>/funcionarios", methods=['GET', 'POST'])
+def employers_space(establishment_alias):
+    try:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+        if not establishment_id:
+            return redirect(url_for('index'))
+    except:
+        return 'URL invalida, verifique o enderco da url'
+    
+    if 'employer_phone' in session:
         #Employer name on header
-        email = session['employer_email']
+        phone = session['employer_phone']
         #cursor.execute("SELECT nome FROM employers WHERE email == ?", [email])
         #full_name = cursor.fetchone()[0]
-        full_name = db.session.execute(db.select(Employers.nome).filter_by(email=email)).scalar_one()
+        full_name = db.session.execute(db.select(Employers.nome).filter_by(telefone=phone, estabelecimento_id=establishment_id)).scalar_one()
         first_name = full_name.split(' ')[-1]
-        print(full_name)
-        print(first_name)
 
         if request.method == 'POST':
             query_date = request.form.get('search_by_date')
@@ -480,10 +728,9 @@ def employers_space():
                 #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [query_date])
                 #date_schedules = cursor.fetchall()
                 #date_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).filter_by(Schedules.data == query_date).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
-                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{query_date}' ORDER BY data, hora DESC;")
+                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{query_date}'AND estabelecimento_id = {establishment_id} ORDER BY data, hora DESC;")
                 date_schedules = db.session.execute(query).all()
-                print(query)
-                return render_template('employers_space.html', data = date_schedules, employer = first_name, logout='sair')
+                return render_template('employers_space.html', data = date_schedules, employer = first_name, logout='sair', establishment_alias=establishment_alias)
             
             if query_today:
                 #----------------------------getting the current date--------------------------------#
@@ -508,96 +755,103 @@ def employers_space():
                 #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id WHERE data == ? ORDER BY data, hora DESC;", [today_date])
                 #today_schedules = cursor.fetchall()
                 #today_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).filter_by(Schedules.data == today_date).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
-                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{today_date}' ORDER BY data, hora DESC;")
+                query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE data = '{today_date}' AND estabelecimento_id = {establishment_id} ORDER BY data, hora DESC;")
                 today_schedules = db.session.execute(query).all()
 
-                return render_template('employers_space.html', data = today_schedules, employer = first_name, logout='sair')
+                return render_template('employers_space.html', data = today_schedules, employer = first_name, logout='sair', establishment_alias=establishment_alias)
             
         #cursor.execute("SELECT schedules.id,  schedules.servico, schedules.data, schedules.hora, users.nome FROM schedules INNER JOIN users ON schedules.user_id = users.id ORDER BY data DESC, hora DESC;")
         #all_schedules = cursor.fetchall()
         #all_schedules = db.session.execute(db.select(Schedules).join(Users, Schedules.user_id == Users.id).order_by(Schedules.data.asc(), Schedules.hora.desc())).all()
-        query = text("SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN Users ON Schedules.user_id = Users.id ORDER BY data DESC, hora DESC;")
+        query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome FROM Schedules INNER JOIN Users ON Schedules.user_id = Users.id WHERE estabelecimento_id = {establishment_id} ORDER BY data DESC, hora DESC;")
         all_schedules = db.session.execute(query).all()
-        return render_template('employers_space.html', data = all_schedules, employer = first_name, logout='sair')
+        return render_template('employers_space.html', data = all_schedules, employer = first_name, logout='sair', establishment_alias=establishment_alias)
 
 
-    return redirect(url_for('employer_login'))
+    return redirect(url_for('employer_login', establishment_alias=establishment_alias))
 
 
 
 
-@app.route('/login_funcionario', methods=['GET', 'POST'])
-def employer_login():
-    if 'employer_email' in session:
-        return redirect(url_for('employers_space'))
+@app.route('/<establishment_alias>/login_funcionario', methods=['GET', 'POST'])
+def employer_login(establishment_alias):
+    try:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+    except:
+        return 'Something get wrong, please check you url'
+
+    if 'employer_phone' in session:
+        return redirect(url_for('employers_space', establishment_alias=establishment_alias))
     
     elif request.method == 'POST':
-        email = request.form.get("email")
+        phone = request.form.get("phone")
         password = request.form.get("password")
 
         
         #cursor.execute("SELECT email, senha FROM employers WHERE email == ? AND senha == ?", (email, password))
-        #data = cursor.fetchall()y
-        data = db.session.execute(db.select(Employers.email, Employers.senha).filter_by(email=email, senha=password))
+        #data = cursor.fetchall()
+        data = db.session.execute(db.select(Employers.telefone, Employers.senha).filter_by(telefone=phone, senha=password, estabelecimento_id=establishment_id))
 
         
-        if email and password:
+        if phone and password:
             for i in data:
-                if (i[0], i[1]) == (email, password):
+                if (i[0], i[1]) == (phone, password):
                     #we verify if the given email and password is registered in database'
 
                     #we save the session for future auto login
-                    session['employer_email'] = email
+                    session['employer_phone'] = phone
                     session.permanent = True
-                    return redirect(url_for('employers_space'))
+                    return redirect(url_for('employers_space', establishment_alias=establishment_alias))
 
-        elif not email or not password:
+        elif not phone or not password:
             flash("Por favor, preencha todos os campos!")
-            return render_template("employer_login.html")
+            return render_template("employer_login.html", establishment_alias=establishment_alias)
                 
         
-        flash("E-mail ou senha Inválida!")
-        return redirect(url_for("employer_login"))
+        flash("Telefone ou senha Inválida!")
+        return redirect(url_for("employer_login", establishment_alias=establishment_alias))
         
     else:
         #executed if request.method == get
         return render_template("employer_login.html")
 
-@app.route('/employer_logout')
-def employer_logout():
-    if 'employer_email' in session:
-        session.pop('employer_email', None)
-        return redirect(url_for('employer_login'))
+@app.route('/<establishment_alias>/employer_logout')
+def employer_logout(establishment_alias):
+    if 'employer_phone' in session:
+        session.pop('employer_phone', None)
+        return redirect(url_for('employer_login', establishment_alias=establishment_alias))
     
-    return redirect(url_for('employer_login'))
+    return redirect(url_for('employer_login', establishment_alias=establishment_alias))
 
 
 
-@app.route("/admin", methods=["GET", "POST"])
-def admin():
+@app.route("/<establishment_alias>/admin", methods=["GET", "POST"])
+def admin(establishment_alias):
+    try:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+    except:
+        return redirect(url_for('index'))
     
     if request.method == 'POST':
-        email = request.form.get("email")
+        phone = request.form.get("phone")
         password = request.form.get("password")
         #cursor.execute("SELECT email, password FROM admin WHERE email == ? AND password == ?", (email, password))
         #data = cursor.fetchall()
+
+        data = db.session.execute(db.select(Admins.telefone, Admins.senha).filter_by(telefone=phone, senha=password, estabelecimento_id=establishment_id)).all()
         
 
-        
-        if email and password:
-            '''
+        if phone and password:
+            
             for i in data:
-                if (i[0], i[1]) == (email, password):
+                if (i[0], i[1]) == (phone, password):
                     #we verify if the given email and password is registered in database'
 
-                    session['admin'] = email
+                    session['admin_phone'] = phone
                     session.permanent = True
-                    return render_template('admin.html')
-            '''
-            if (email, password) == ('onamicanosail01@gmail.com', 'AdminNamicano'):
-                return render_template('admin.html')
+                    return render_template('admin.html', establishment_alias=establishment_alias)
 
-        elif not email or not password:
+        elif not phone or not password:
             flash("Por favor, preencha todos os campos!")
             return render_template("login_admin.html")
                 
@@ -607,101 +861,124 @@ def admin():
         
     else:
         #executed if request.method == get
+        if 'admin_phone' in session:
+            phone = session['admin_phone']
 
-        #Gathering all the get query of admin pagr (list user, shedule...)
-        list_employers = request.args.get('list_employers')
-        client_id = request.args.get('client_id')
-        client_name = request.args.get('client_name')
-        schedule_id = request.args.get('schedule_id')
+            admin_id_belongs = db.session.execute(db.select(Admins.estabelecimento_id).filter_by(telefone=phone)).scalar_one()
+            if admin_id_belongs == establishment_id:
+                #It means that the admin belongs to that establishment,
+                # because the estabelecimento_ saved with him is iguals to the current page id
 
-        employer_id = request.args.get('remove_employer')
+                #Gathering all the get query of admin pagr (list user, shedule...)
+                list_employers = request.args.get('list_employers')
+                client_id = request.args.get('client_id')
+                client_name = request.args.get('client_name')
+                schedule_id = request.args.get('schedule_id')
+
+                employer_id = request.args.get('remove_employer')
 
 
 
 
 
-        '''
-        Working with adming queries
-        The sequence of if elif is execucted when the admin loged in
-        '''
-        #We check if the admin makes a query with the method get
+                '''
+                Working with adming queries
+                The sequence of if elif is execucted when the admin loged in
+                '''
+                #We check if the admin makes a query with the method get
 
-        if list_employers:
-            #rendering employers
-            table_title = 'Lista de Funcionarios'
+                if list_employers:
+                    #rendering employers
+                    table_title = 'Lista de Funcionarios'
 
-            #Getting the columns name
-            columns_name = ('ID', 'Nome', 'Telefone', 'Email', 'Senha', 'Tipo_documento', 'Numero_documento', 'Data_nascimento', 'Local_nascimento', 'Funcao', 'Contrato')
+                    #Getting the columns name
+                    columns_name = ('ID', 'Nome', 'Telefone', 'Email', 'Funcao', 'Contrato')
 
-            #cursor.execute("SELECT * FROM employers")
-            #employers = cursor.fetchall()
-            #employers = db.session.execute(db.select(Employers)).all(),
-            query = text(f"SELECT * FROM Employers")
-            employers = db.session.execute(query).all()
-            return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=employers)
+                    #cursor.execute("SELECT * FROM employers")
+                    #employers = cursor.fetchall()
+                    #employers = db.session.execute(db.select(Employers)).all(),
+                    query = text(f"SELECT Employers.id, Employers.nome, Employers.telefone, Employers.email, Employers.funcao, Employers.contrato FROM Employers WHERE estabelecimento_id = {establishment_id}")
+                    employers = db.session.execute(query).all()
+                    return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=employers, establishment_alias=establishment_alias)
+                
+                elif employer_id:
+                    #Getting the columns name
+                    #cursor.execute("SELECT nome FROM employers WHERE id == ?", [employer_id])
+                    #nome = cursor.fetchone()[0]
+                    try:
+                        funcionario = db.session.execute(db.select(Employers).filter_by(id=employer_id, estabelecimento_id=establishment_id)).scalar_one()
+                        nome = funcionario.nome
+                        table_title = 'Eliminado funcionario/a ' + nome
+
+                        #cursor.execute("DELETE FROM employers WHERE id == ?", [employer_id])
+                        #db.commit()
+                        db.session.delete(funcionario)
+                        db.session.commit()
+                        return render_template("admin.html", table_title=table_title, establishment_alias=establishment_alias)
+                    except:
+                        flash('Nao existe funcionrio com o id ' + employer_id)
+                        return render_template("admin.html", establishment_alias=establishment_alias)
+
+                
+                    '''
+                elif client_id:
+                    table_title = 'Pesquisa de cliente por id'
+
+                    #Getting the columns name
+                    columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
+
+                    #cursor.execute("SELECT * FROM users WHERE id == ?", [client_id])
+                    #client = cursor.fetchall()
+                    #client = db.session.execute(db.select(Users).filter_by(id=client_id)).all()
+                    query = text(f"SELECT * FROM Users WHERE id = {client_id}")
+                    client = db.session.execute(query).all()
+                    return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=client)
+                
+                
+                elif client_name:
+                    table_title = 'Pesquisa cliente por nome'
+
+                    #Getting the columns name
+                    columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
+
+                    #cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
+                    #schedules = cursor.fetchall()
+                    query = text(f"SELECT * FROM users WHERE nome LIKE '%{client_name}%'")
+                    schedules = db.session.execute(query).all()
+                    return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
+                    '''
+
+                elif schedule_id:
+                    table_title = 'Consulta de agenda'
+
+                    #Getting the columns name
+                    columns_name = ('ID agenda', 'Servico', 'Data', 'Hora', 'Cliente', 'Telefone')
+
+                    #cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
+                    #schedules = cursor.fetchall()
+                    #query = text(f"SELECT * FROM Schedules WHERE id = {schedule_id} AND estabelecimento_id = {establishment_id}")
+                    query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome, Users.telefone FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE Schedules.id = '{schedule_id}' AND estabelecimento_id = {establishment_id} ORDER BY data, hora DESC;")
+                    schedules = db.session.execute(query).all()
+                    if not schedules:
+                        flash('Nao tem nenhuma agenda com o id ' + schedule_id)
+                        return  render_template('admin.html', establishment_alias=establishment_alias)
+                    return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules, establishment_alias=establishment_alias)
         
-        elif employer_id:
-            #Getting the columns name
-            #cursor.execute("SELECT nome FROM employers WHERE id == ?", [employer_id])
-            #nome = cursor.fetchone()[0]
-            funcionario = db.session.execute(db.select(Employers).filter_by(id=employer_id)).scalar_one()
-            nome = funcionario.nome
-            table_title = 'Eliminado funcionario/a ' + nome
-
-            #cursor.execute("DELETE FROM employers WHERE id == ?", [employer_id])
-            #db.commit()
-            db.session.delete(funcionario)
-            db.session.commit()
-            return render_template("admin.html", table_title=table_title)
-        
-        elif client_id:
-            table_title = 'Pesquisa de cliente por id'
-
-            #Getting the columns name
-            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
-
-            #cursor.execute("SELECT * FROM users WHERE id == ?", [client_id])
-            #client = cursor.fetchall()
-            #client = db.session.execute(db.select(Users).filter_by(id=client_id)).all()
-            query = text(f"SELECT * FROM Users WHERE id = {client_id}")
-            client = db.session.execute(query).all()
-            return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=client)
         
         
-        elif client_name:
-            table_title = 'Pesquisa cliente por nome'
-
-            #Getting the columns name
-            columns_name = ('ID', 'Nome', 'Email', 'Telefone', 'Senha', 'Inscrito desde')
-
-            #cursor.execute("SELECT * FROM users WHERE nome LIKE ?", ['%'+client_name+'%'])
-            #schedules = cursor.fetchall()
-            query = text(f"SELECT * FROM users WHERE nome LIKE '%{client_name}%'")
-            schedules = db.session.execute(query).all()
-            return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
-        
-        elif schedule_id:
-            table_title = 'Consulta de agenda'
-
-            #Getting the columns name
-            columns_name = ('ID', 'Cliente id', 'Servico', 'Data', 'Hora')
-
-            #cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
-            #schedules = cursor.fetchall()
-            query = text(f"SELECT * FROM Schedules WHERE id = {schedule_id}")
-            schedules = db.session.execute(query).all()
-            return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules)
-        
-        
-        
-        #If the admin have not given the his email and password
+        #If the admin have not given his email and password
+        # or admin does'nt beleong to the establishment (maybe he made an url injection )
         return render_template("login_admin.html")
-    
-    
 
-
-@app.route("/admin/subscribe_employer", methods=['GET', 'POST'])
-def subscribe_employer():
+@app.route("/<establishment_alias>/admin/subscribe_employer", methods=['GET', 'POST'])
+def subscribe_employer(establishment_alias):
+    try:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=establishment_alias)).scalar_one()
+        if not establishment_id:
+            return redirect(url_for('admin'))
+    except:
+        return 'URL invalida, verifique o enderco da url'
+    
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
@@ -713,16 +990,16 @@ def subscribe_employer():
         birth_place = request.form.get('birth_place')
         functionalite = request.form.get('functionalite')
         contrat = request.form.get('contrat')
-
         
         #cursor.execute("SELECT email, telefone, numero_documento FROM employers")
         #available_info = cursor.fetchall()
-        query = text("SELECT email, telefone, numero_documento FROM Employers")
-        available_info = db.session.execute(query).all()
+        #query = text("SELECT email, telefone, numero_documento FROM Employers")
+        #available_info = db.session.execute(query).all()
+        available_info = db.session.execute(db.select(Employers.email, Employers.telefone).filter_by(estabelecimento_id=establishment_id)).all()
 
         for i in available_info:
-            if i[0] == email or i[1] == phone or i[2] == document_number:
-                flash("Existe esse funcionário. Use outro e-mail ou número de telefone ou Numero de documento.")
+            if i[0] == email or i[1] == phone:
+                flash("Existe esse funcionário. Use outro e-mail ou número de telefone.")
                 return render_template('subscribe_employer.html')
             
         if not name or not email or not phone or not password or not document_type or not  document_number or not birth_date or not birth_place or not functionalite or not contrat:
@@ -750,11 +1027,12 @@ def subscribe_employer():
                     data_nascimento = birth_date,
                     local_nascimento = birth_place,
                     funcao = functionalite,
-                    contrato = contrat
+                    contrato = contrat,
+                    estabelecimento_id = establishment_id
                 )
                 db.session.add(employer)
                 db.session.commit()
-                return redirect(url_for('admin'))
+                return redirect(url_for('admin', establishment_alias=establishment_alias))
             
             #Inserting in to database the data
             name = name.capitalize()
@@ -770,13 +1048,14 @@ def subscribe_employer():
                 data_nascimento = birth_date,
                 local_nascimento = birth_place,
                 funcao = functionalite,
-                contrato = contrat
+                contrato = contrat,
+                estabelecimento_id = establishment_id
             )
             db.session.add(employer)
             db.session.commit()
 
             #saving the email and name on session
-            return redirect(url_for('admin'))
+            return redirect(url_for('admin', establishment_alias=establishment_alias))
         
     
     
@@ -784,18 +1063,17 @@ def subscribe_employer():
         #When the methods is get
         #Must be the admin making subscription
         if 'admin' in session:
-            return render_template('subscribe_employer.html')
+            return render_template('subscribe_employer.html', establishment_alias=establishment_alias)
         
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin', establishment_alias=establishment_alias))
 
 
 
 if __name__ == "__main__":
-    
+    '''
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
     '''
     
-    app.run(host = '0.0.0.0', port='5000', debug=True)
-    '''
+    app.run(debug=True)
