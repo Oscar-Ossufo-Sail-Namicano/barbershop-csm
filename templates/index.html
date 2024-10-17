@@ -8,9 +8,9 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <script src="../static/js/js.js" defer></script>
 
-        <meta name="description" content="Salão e barbearia csm em Lichinga, vem que a gente cuida da sua beleza">
-        <meta name="keywords" content="Salão, barbearia, Salão e barbearia csm, Lichinga, Salão unissexo, csm, Ciências sem mistérios, cienciassemmisterios.com, salaoebarbeariacsm.com, Namicano, Oscar Namicano, salaoebarbeariacsm.onrender.com">
-        <title>Salão e barbearia csm</title>
+        <meta name="description" content="Agendamento de atendimento em estabelecimentos comerciais">
+        <meta name="keywords" content="agendas, mozagendas, horario, Salão unissexo, csm, Ciências sem mistérios, mozagendas.com, www.mozagendas.com, Namicano, Oscar Namicano">
+        <title>Moz Agendas</title>
     </head>
     <body>
         <header>
@@ -21,10 +21,10 @@
                 <nav class="desktop_nav nav">
                     <ul>
                         <li><a href="#" class="nav_link">Home</a></li>
-                        <li><a href="#services" class="nav_link">Nossos Serviços</a></li>
-                        <li><a href="#packages" class="nav_link">Promoções</a></li>
+                        <li><a href="#services" class="nav_link">Para quem é</a></li>
+                        <li><a href="#packages" class="nav_link">Planos</a></li>
                         <li><a href="#scheduling" class="nav_link">Agendamento</a></li>
-                        <li><a href="#contact" class="nav_link">Localize-nos</a></li>
+                        <li><a href="#contact" class="nav_link">Contactos</a></li>
                         <li><a href="{{url_for('schedules')}}" class="nav_link">{{suas_agendas}}</a></li>
                     </ul>
                 </nav> <!--Desktop menu end-->
@@ -45,10 +45,10 @@
                     <nav>
                         <ul>
                             <li><a href="#" class="nav_link">Home</a></li>
-                            <li><a href="#services" class="nav_link">Nossos Serviços</a></li>
-                            <li><a href="#packages" class="nav_link">Promoções</a></li>
+                            <li><a href="#services" class="nav_link">Para quem é</a></li>
+                            <li><a href="#packages" class="nav_link">Pacotes</a></li>
                             <li><a href="#scheduling" class="nav_link">Agendamento</a></li>
-                            <li><a href="#contact" class="nav_link">Localize-nos</a></li>
+                            <li><a href="#contact" class="nav_link">Contactos</a></li>
                             <li><a href="{{url_for('schedules')}}" class="nav_link">{{suas_agendas}}</a></li>
 
                         </ul>
@@ -64,11 +64,11 @@
 
                     <div class="flex">
                         <div class="hero_image">
-                            <img src="../static/images/female-4899174_1280-removebg-preview.png" alt="Homem">
+                            <img src="../static/images/chair-4281517_1280.png" alt="Homem">
                         </div>
                         <div class="hero_content section_title">
-                            <h1 >Facilite a vida dos<span class="modifier_span">seus clientes!</span></h1>
-                            <p style="margin-bottom: .25rem;">Olá! Registre o seu estabelecimento, sua barbearia ou salao de beleza hoje e facilte os seus clientes para fazerem marcacoes de horarios sem ter que se preocupar em fazer chamadas</p>
+                            <h1 >Facilite tua vida e a dos<span class="modifier_span">seus clientes!</span></h1>
+                            <p style="margin-bottom: .25rem;">Impressione seus clientes com um sistema de agendamento moderno onde eles podem escolher o que querem e a que horas desejam ser atendidos. Pois é, diga adeus às ligações perdidas e olá para mais agendamentos.</p><br>
                             <a href="{{ url_for('register_establishment') }}" class="btn">Cadastrar estabelecimento</a>
                         </div>
 
@@ -78,34 +78,28 @@
             <section class="services" id="services"> <!--Services start-->
                 <div class="interface">
                     <div class="section_title">
-                        <h1>Serviços <span>Prestados></span></h1>
+                        <h1>Para quem é<span>o sistema?</span></h1>
                     </div>
-                    <p style="margin-bottom: 1.1rem;">Cabelo quebradiço? ou não cresce? Qualquer que seja o teu problema nós resolvemos</p>
+                    <p style="margin-bottom: 1.1rem;">Não sabe se o sistema serve para si? Veja abaixo quem pode se cadastrar na plataforma:</p>
                     <div class="services_list">
                         <div class="box">
                             <div class="inner">
                                 <img src="../static/icons/hair-wash.png" alt="">
-                                <p>lavagem de cabelo</p>
+                                <p>Salões de beleza</p>
                             </div>
                         </div> <!--service 1-->
                         <div class="box">
                             <div class="inner">
                                 <img src="../static/icons/hair-cut.png" alt="">
-                                <p>Corte de cabelo</p>
+                                <p>Barbearias</p>
                             </div>
                         </div> <!-- end service 2-->
                         <div class="box">
                             <div class="inner">
-                                <img src="../static/icons/healthy-hair.png" alt="">
-                                <p>Tratamento de cabelo</p>
+                                <img src="../static/icons/people.png" alt="">
+                                <p>Clientes que desejam<br>agendar atendimento</p>
                             </div>
-                        </div>  <!-- end service 3-->
-                        <div class="box">
-                            <div class="inner">
-                                <img src="../static/icons/braiding.png" alt="">
-                                <p>Tranças diversas e<br>muito mais</p>
-                            </div>
-                        </div>  <!-- end service 4-->
+                        </div> <!-- end service 3-->
                     </div>
                 </div>
             </section> <!--Services end-->
@@ -114,114 +108,116 @@
                     <div class="section_title">
                         <h1>Pacotes<span>Promocionais</span></h1>
                     </div>
+                    <p>O uso da plataforma é grátis para pessoas/clientes comuns. São elegíveis ao pagamento da plataforma aos donos de estabelecimentos</p>
                     <div class="packages_list">
                         <div class="package">
                             <div class="package_name">
-                                <h3>Look Básico</h3>
+                                <h3>Pacote Start<br><span style="font-size: 65%;"><del>225mt/mês</del><br>155mt/mês</span></h3>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>corte de cabelo</p>
+                                <p>número ilimitado de agendas</p>
                             </div>
                             <div class="package_benefit">
-                                <i class="bi bi-x"></i>
-                                <p class="unavailable">lavagem</p>
+                                <i class="bi bi-check"></i>
+                                <p>ver agendas de clientes</p>
                             </div>
                                 
                             <div class="package_benefit">
-                                <i class="bi bi-x"></i>
-                                <p class="unavailable">alimentação de cabelo</p>
+                                <i class="bi bi-check"></i>
+                                <p>actualizar tabela de serviços e preços</p>
                             </div>
 
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">trança</p>
+                                <p class="unavailable">mais de 3 colaboradores</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">Manicure</p>
+                                <p class="unavailable">maior liberdade de personalizar o site</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">Pedicure</p>
+                                <p class="unavailable">sistema de pagamento integrado</p>
                             </div>
                             
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">Mais...</p>
+                                <p class="unavailable">Relatórios de desempenho</p>
                             </div>
                         </div> <!--package 1 end-->
                         <div class="package">
                             <div class="package_name">
-                                <h3>Standard</h3>
+                                <h3>Pacote Standard<br><span style="font-size: 65%;"><del>300mt/mês</del><br>215mt/mês</span></h3>
+            
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>corte de cabelo</p>
+                                <p>número ilimitado de agendas</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>lavagem</p>
+                                <p>ver agendas de clientes</p>
                             </div>
                                 
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>alimentação de cabelo</p>
+                                <p>actualizar tabela de serviços e preços</p>
                             </div>
 
                             <div class="package_benefit">
-                                <i class="bi bi-x"></i>
-                                <p class="unavailable">trança</p>
+                                <i class="bi bi-check"></i>
+                                <p>mais de 3 colaboradores</p>
+                            </div>
+                            <div class="package_benefit">
+                                <i class="bi bi-check"></i>
+                                <p>maior liberdade de personalizar o site</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">Manicure</p>
-                            </div>
-                            <div class="package_benefit">
-                                <i class="bi bi-x"></i>
-                                <p class="unavailable">Pedicure</p>
+                                <p class="unavailable">sistema de pagamento integrado</p>
                             </div>
                             
                             <div class="package_benefit">
                                 <i class="bi bi-x"></i>
-                                <p class="unavailable">Mais</p>
+                                <p class="unavailable">Relatórios de desempenho</p>
                             </div>
                         </div> <!--package 2 end-->
 
                         <div class="package">
                             <div class="package_name">
-                                <h3>Look Elite</h3>
+                                <h3>Pacote Premium<br><span style="font-size: 65%;">800mt/mês</span></h3>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>corte de cabelo</p>
+                                <p>número ilimitado de agendas</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>lavagem</p>
+                                <p>ver agendas de clientes</p>
                             </div>
                                 
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>alimentação de cabelo</p>
+                                <p>actualizar tabela de serviços e preços</p>
                             </div>
 
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>trança</p>
+                                <p>mais de 3 colaboradores</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>Manicure</p>
+                                <p >maior liberdade de personalizar o site</p>
                             </div>
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>Pedicure</p>
+                                <p>sistema de pagamento integrado</p>
                             </div>
                             
                             <div class="package_benefit">
                                 <i class="bi bi-check"></i>
-                                <p>Mais</p>
+                                <p>Relatórios de desempenho</p>
                             </div>
                         </div> <!--package 3 end-->
 
@@ -233,11 +229,11 @@
             <section class="scheduling" id="scheduling">
                 <div class="interface">
                     <div class="section_title">
-                        <h1>Agende seu horário<span>para atendimento</span></h1>
+                        <h1>Encontre salões<span>e barbearias</span></h1>
                     </div>
                     <div class="scheduling_box">
-                        <p>Através do nosso sistema informático sofisticado, agora os nossos clientes podem marcar/escolher o dia e hora em que desejam receber o seu atendimento e ainda mais indicar qual serviço desejam, bastando apenas criar conta na nossa plataforma.</p>
-                        <a href="{{ url_for('register_establishment') }}" class="btn">Marque agora</a>
+                        <p>Através do moz agendas, agora podes procurar salões e barbearias e marcar o dia e hora em que desejas receber o seu atendimento e ainda mais indicar qual serviço desejas.</p>
+                        <a href="{{ url_for('index') }}" class="btn">Procurar estabelecimento</a>
                     </div>
                 </div>
             </section> <!--scheduling end-->
@@ -245,16 +241,11 @@
         <footer class="footer" id="contact">
             <address class="footer_list interface">
                 <div class="footer_data">
-                    <h2>Nosso endereço</h2>
-                    <p>Em frente da entrada da pista (campo)<br> Lichinga-Chiuala</p>
+                    <h2>Acomodation</h2>
+                    <p>Mozambique<br> Lichinga-Chiuala</p>
                 </div>
                 <div class="footer_data">
-                    <h2>Nosso Horário</h2>
-                    <p>Todos os Dias</p>
-                    <p>(Domingo á Sabado)<br>das 07:00 as 20:00</p>
-                </div>
-                <div class="footer_data">
-                    <h2>Contactos</h2>
+                    <h2>Suporte</h2>
                     <p><a href="tel:+258842244136">+258 842244136</a></p>
                     <a href="mailto:onamicanosail01@gmail.com?subject=Feedback from csm salon site">onamicanosail01@gmail.com</a>
                     <div class="footer_social_btn">
@@ -263,7 +254,7 @@
                 </div>
             </address>
             <div class="copy">
-                <p>Ciências Sem Mistérios - CSM</p>
+                <p>Moz Agendas</p>
                 <span>&copy Todos os direitos reservados <br>2024</span>
             </div>
         </footer>
