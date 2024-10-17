@@ -8,8 +8,7 @@
                 <div class="login_description_container">
                     <div class="login_description">
                         <h1 style="margin-bottom: .5rem;">Bem Vindo!</h1>
-                        <p>Regite seu estabelcimento.<br>Se já registou, entao:</p><br>
-                        <a href="enter_establishment_space" class="btn">Entrar</a>
+                        <p>Regite seu estabelcimento.</p><br>
                     </div>
                 </div>
                 
@@ -25,26 +24,22 @@
                         <form action="" enctype="multipart/form-data" method="post">
                             <input class="entry" type="text" name="Establishment_name" autocomplete="off" placeholder="Nome do seu estabelecimento" required>
                             <input class="entry" type="text" name="alias" placeholder="O pseudonome do seu estabelecimento">
-                            <p>Hora de abertura</p>
+                            <p>Horas de abertura</p>
                             <input style="width: 40%;" type="time" name="open_hour" required id="idopen_hour">
-                            <p>Hora de fechamento</p>
+                            <p>Horas de fechamento</p>
                             <input style="width: 40%;" type="time" name="close_hour" required id="idclose_hour">
                             <input class="entry" type="text" name="open_days" autocomplete="off" placeholder="Dias de funcionamento (Ex: Segunda a Sexta)" required>
-                            <input class="entry" type="text" name="burgh" placeholder="Bairro onde se esnocontra o estabelecimento">
-                            <input class="entry" type="text" name="burgh_description" autocomplete="off" placeholder="Caracterizacao do bairro (Ex: Em frente da Banco Millenium Bim)" required>
+                            <input class="entry" type="text" name="burgh" placeholder="Bairro onde encontra-se o estabelecimento">
+                            <input class="entry" type="text" name="burgh_description" autocomplete="off" placeholder="Explique o local (Ex: Perto do Millenium Bim)" required>
                             <input class="entry" type="text" name="province" placeholder="provincia">
                             <input class="entry" type="text" name="district" autocomplete="off" placeholder="Distrito" required>
                             <input class="entry" type="tel" name="phone" placeholder="Telefone" required>
-                            <input class="entry" type="email" name="email" placeholder="Email (Opcional)">
+                            <!--<input class="entry" type="email" name="email" placeholder="Email (Opcional)">-->
                             <label for="idwelcome_msg" style="color: black;">Escreva uma mensagem de boas vindas</label>
-                            <textarea style="width: 90%; height: 5rem;" name="welcome_msg" id="idwelcome_msg" required placeholder="Ex: Ola seja bem vindo ao sistema de agendamento do salao e de beleza CSM. Faca a sua agenda de forma facil e comoda"></textarea>
+                            <textarea style="width: 90%; height: 5rem; padding: 2px;" name="welcome_msg" id="idwelcome_msg" required placeholder="Ex: No salão CSM, temos o melhor para ti dar. Agora já podes marcar o seu horário online no nosso salão, então não perca tempo, agende agora o seu horário e esperamos por ti!"></textarea>
                         
                             <input type="submit" value="cadastrar" class="btn">
                         </form>
-                        <aside class="login_or_signup">
-                            <p>Ja cadastrou?</p>
-                            <a href="/login" class="btn">Login</a>
-                        </aside>
                     </div>
                 </div>
             </div>

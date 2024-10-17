@@ -20,7 +20,7 @@
                 </div>
                 <nav class="desktop_nav nav">
                     <ul>
-                        <li><a href="#" class="nav_link">Home</a></li>
+                        <li><a href="/{{establishment_details['alias']}}" class="nav_link">Home</a></li>
                         <li><a href="#services" class="nav_link">Nossos Serviços</a></li>
                         <li><a href="#scheduling" class="nav_link">Agendamento</a></li>
                         <li><a href="#contact" class="nav_link">Localize-nos</a></li>
@@ -82,7 +82,7 @@
                     <div class="packages_list">
                         <div class="package">
                             <div class="package_name">
-                                <h3>Disponivel:</h3>
+                                <h3>Disponível:</h3>
                             </div>
                             {% for service in services %}
                                 <div class="package_benefit">
@@ -99,7 +99,7 @@
                         <h1>Agende seu horário<span>para atendimento</span></h1>
                     </div>
                     <div class="scheduling_box">
-                        <p>Através do nosso sistema informático sofisticado, agora os nossos clientes podem marcar/escolher o dia e hora em que desejam receber o seu atendimento e ainda mais indicar qual serviço desejam, bastando apenas criar conta na nossa plataforma.</p>
+                        <p>Através do nosso sistema informático sofisticado, agora os nossos clientes podem marcar o seu atendimento sem precisar esperar filas grandes no nosso estabelecimento, basta clicar no botão abaixo.</p>
                         <a href="{{ url_for('scheduling', establishment_alias=establishment_alias)}}" class="btn">Marque agora</a>
                     </div>
                 </div>

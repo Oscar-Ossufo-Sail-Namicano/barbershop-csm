@@ -162,34 +162,35 @@ def signup():
     
     if request.method == 'POST':
         name = request.form.get('name')
-        email = request.form.get('email')
+        #email = request.form.get('email')
         phone = request.form.get('phone')
         password = request.form.get('password')
         password_confirmation = request.form.get('password_confirmation')
         
         #cursor.execute("SELECT email, telefone FROM users")
-        emails = db.session.execute(db.select(Users.email, Users.telefone)).all()
+        phones = db.session.execute(db.select(Users.nome, Users.telefone)).all()
         #emails = cursor.fetchall()
 
-        for i in emails:
-            if i[0] == email:
-                flash("Existe essa conta com o mesmo e-mail. Use outro e-mail!")
+        for i in phones:
+            if i[1] == phone:
+                flash("Existe essa conta com o mesmo número. Use outro número de telefone!")
                 return render_template('signup.html')
-            
+            '''
             elif i[1]== phone:
                 flash("Existe essa conta com o mesmo número. Use outro número de telefone")
                 return render_template('signup.html')
+                '''
 
-        if not name or not email or not phone or not password:
-            flash("Por favor, o campo de nome!")
+        if not name or not phone or not password:
+            flash("Por favor, preencha todos os campos!")
             return render_template('signup.html')
         
         elif not phone:
-            flash("Por favor, preencha o campo de telefone!")
+            flash("Por favor, preencha o campo de 'telefone'!")
             return render_template('signup.html')
         
         elif not password:
-            flash("Por favor, preencha crie uma sena!")
+            flash("Por favor, preencha o campo 'crie uma senha'!")
             return render_template('signup.html')
 
         elif  password != password_confirmation:
@@ -211,7 +212,6 @@ def signup():
                 #db.commit()
                 user = Users(
                     nome = name,
-                    email = email,
                     telefone = phone,
                     senha = password
                 )
@@ -228,7 +228,6 @@ def signup():
             #db.commit()
             user = Users(
                 nome = name,
-                email = email,
                 telefone = phone,
                 senha = password
             )
@@ -279,7 +278,7 @@ def login():
             return render_template("login.html")
                 
         
-        flash("E-mail ou senha inválida!")
+        flash("Telefone ou senha inválida!")
         return redirect(url_for("login"))
         
     else:
@@ -303,7 +302,7 @@ def register_establishment():
         province = request.form.get('province')
         district = request.form.get('district')
         phone = request.form.get('phone')
-        email = request.form.get('email')
+        #email = request.form.get('email')
 
 
 
@@ -338,8 +337,7 @@ def register_establishment():
                 descricao_do_bairro = burgh_description,
                 provincia = province,
                 distrito = district,
-                telefone = phone,
-                email = email
+                telefone = phone
                 
             )
             db.session.add(establishment)
@@ -380,7 +378,6 @@ def new_establishment_sucessfully():
         new_admin = Admins(
             nome = admin_name,
             telefone = admin_phone,
-            email = admin_email,
             senha = admin_password,
             estabelecimento_id = establishment_id
         )

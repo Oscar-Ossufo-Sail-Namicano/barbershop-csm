@@ -60,14 +60,14 @@
 <body>
     <div class="container">
         <h1 class="success-message">Estabelecimento registrado com sucesso!</h1>
-        <p>Agora o seu estabelcimento ja tem um site online acessivel atraves de https://mozagendas.com/{{data['alias']}}. .</p>
+        <p>Agora o seu estabelecimento já tem um site online acessível através de https://mozagendas.com/{{data['alias']}}. .</p>
         <a href="{{url_for('new_establishment_sucessfully')}}" class="download-button" download>Baixar Instruçoes</a>
         <div class="instructions">
             <h2>Instruções para Acessar</h2>
             <ul>
-                <li><strong>Painel Administrativo:</strong> Visite <a href="{{url_for('admin', establishment_alias=data['alias'])}}">https://mozagendas.com/{{data['alias']}}/admin</a> e faça login com o numero {{data['phone']}} e a senha {{ data['password'] }} para poderes adicionar funcionarios actualizar sua tabela de servicos e mais.</li>
+                <li><strong>Painel Administrativo:</strong> Visite <a href="{{url_for('admin', establishment_alias=data['alias'])}}">https://mozagendas.com/{{data['alias']}}/admin</a> e faça login com o numero {{data['phone']}} e a senha {{ data['password'] }} para poderes adicionar funcionários actualizar sua tabela de serviços e mais.</li>
                 <li><strong>Página Inicial (Acessível por Clientes):</strong> forneça o link <a href="{{url_for('establishment_page', establishment_alias=data['alias'])}}">https://mozagendas.com/{{data['alias']}}</a> do seu site aos seus clientes para acessarem a página inicial do seu estabelecimento, para fazerem agendas.</li>
-                <li><strong>Página Reservada para Funcionários:</strong> <a href="{{url_for('employers_space', establishment_alias=data['alias'])}}">https://mozagendas.com/{{data['alias']}}/funcionarios</a> devera acessar sempre nesse link para ver lista de agendamentos dos seus clientes.</li>
+                <li><strong>Página Reservada para Funcionários:</strong> <a href="{{url_for('employers_space', establishment_alias=data['alias'])}}">https://mozagendas.com/{{data['alias']}}/funcionarios</a> deverá acessar sempre nesse link para ver lista de agendamentos dos seus clientes.</li>
             </ul>
         </div>
     </div>
