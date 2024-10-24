@@ -21,10 +21,11 @@ class Base(DeclarativeBase):
 #db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'MY1342_SECRET23342_KEY_In_this_app_till_now_for_n00ne-descovery'
+app.config['SECRET_KEY'] = 'MY13424_SECRET23342_KEY_In_this_app_till_now_for_no000one-descovery'
 #Configure the database:
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 #Initialize the app with rhe sql_alchemy extension:
 #db.init_app(app)
 
@@ -1222,10 +1223,10 @@ def subscribe_employer(establishment_alias):
 
 
 if __name__ == "__main__":
-    '''
+
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
-'''
+
     
-    app.run(debug=True)
+    #app.run(debug=True)
