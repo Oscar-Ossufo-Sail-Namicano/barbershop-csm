@@ -113,7 +113,10 @@ h1, h2, h3, p {
     margin-bottom: 2rem;
 }
 
-
+/* Zebra table */
+.Ztable tr:nth-child(odd) {
+    background-color: var(--body-black-color);
+  }
 /*HEADER STILIZATION*/
 header {
     background-color: var(--body-black-color);

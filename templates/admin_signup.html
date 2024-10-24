@@ -23,14 +23,13 @@
                         {% endwith %}
                         <form action="{{url_for('new_establishment_sucessfully')}}" method="post">
                             <input class="entry" type="text" name="name" autocomplete="off" placeholder=" Seu nome" required>
-                            <input class="entry" type="email" name="email" placeholder="E-mail (Este campo não é obrigatório)">
+                            <!--<input class="entry" type="email" name="email" placeholder="E-mail (Este campo não é obrigatório)">-->
                             <input class="entry" type="tel" name="phone" placeholder="Seu número de telefone" required>
                             <input class="entry" type="password" name="password" placeholder="Senha (no mínimo 6 caracteres)" required minlength="6">
                             <input class="entry" type="password" name="password_confirmation" placeholder="Confirme sua senha" required minlength="6">
-                            <input type="hidden" name="establishment_id" value="{{transfer_data['new_establishment_id']}}">
-                            <input type="hidden" name="establishment_alias" value="{{transfer_data['new_establishment_alias']}}">
+                            
                         
-                            <input type="submit" value="cadastrar" class="btn">
+                            <input type="submit" value="Finalizar" class="btn">
                         </form>
                     </div>
                 </div>

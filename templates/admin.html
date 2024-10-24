@@ -11,7 +11,7 @@
                     </form>
                     <form action="">
                         <label style="display: block;" for="id_remove_employer">Eliminar funcionário</label>
-                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
+                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="text" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
                         <input style = "color: red; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Eliminar"><br><br>
 
                     </form>
@@ -31,11 +31,17 @@
                     </form>
                 </div>
             -->
+           
                 <div style="text-align: right;" class="schedules_query">
-                    <p>Pesquisar uma agenda</p>
                     <form action="">
-                        <label style="display: block;" for="idagenda">Cod. da agenda</label>
-                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" id="idagenda" name="schedule_id">
+                        <label style="display: block;" for="idAddService">Adicionar serviço</label>
+                        <input style = "border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Nome do serviço" id="idAddService" name="new_service">
+                        <input style = "width: 4rem; display: inline-block; border: solid 1px black; padding: 3px 10px;" type="text" placeholder="preço" id="idService_price" name="new_service_price">
+                        <input style = "color: blue;  border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Adicionar"><br><br>
+                    </form>
+                    <form action="">
+                        <label style="display: block;" for="idagenda">Pesquisar uma agenda</label>
+                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Id. da agenda" id="idagenda" name="schedule_id">
                         <input style = "color: blue; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Pesquisar">
                     </form>
                 </div>
@@ -44,11 +50,11 @@
             <div class="displayer_queris">
                 {% with messages = get_flashed_messages()[0] %}
                     {% if messages %}
-                        <p style="font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
+                        <p style="text-align: center; font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
                     {% endif %}
                 {% endwith %}
                 <p style="text-align: center;">{{ table_title }}</p>
-                <table class="table" style="min-width: 1300px; font-size: xx-small;">
+                <table class="table" style="font-size: xx-small;">
                     <thead>
                         
                         <tr>

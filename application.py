@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
@@ -23,8 +23,8 @@ class Base(DeclarativeBase):
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'MY1342_SECRET23342_KEY_In_this_app_till_now_for_n00ne-descovery'
 #Configure the database:
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///csm_salon_and_barber_data.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u3pdcv7rl74tkl:p85a1d0a972a27687149b85638b2374121480a33ead9d37e1065c94c276cc30a1@cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6dbar3069o937'
 #Initialize the app with rhe sql_alchemy extension:
 #db.init_app(app)
 
@@ -126,7 +126,7 @@ class Admins(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String, nullable=False)
     telefone = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150))
     senha = db.Column(db.String(150), nullable=False)
     privilegios = db.Column(db.String(150))
     estabelecimento_id = db.Column(db.Integer, db.ForeignKey('establishments.id'))
@@ -198,6 +198,7 @@ def signup():
             return render_template('signup.html')    
         
         else:
+            #Everything was okay and we can sava the info
             #Treating the name from the bad user spacing after the name and capitizing every part of name
             splited = name.split(' ')
             treated_name = ''
@@ -220,6 +221,30 @@ def signup():
 
                 session['user_phone'] = phone
                 session.permanent = True
+
+                if 'schedule_details' in session:
+                    #Asking if the user doesn't coming from scheduling --> login pages
+                    #
+    
+                    schedule_details = session['schedule_details']
+                    #Retrieving the schedule saved in the session from the schedule page
+
+                    user_id = db.session.execute(db.select(Users.id).filter_by(telefone=phone)).scalar_one()
+                        
+                    schedule = Schedules(
+                        servico = schedule_details['service'],
+                        data = schedule_details['date'],
+                        hora = schedule_details['time'],
+                        estabelecimento_id = schedule_details['establishment_id'],
+                        user_id = user_id
+                    )
+                    db.session.add(schedule)
+                    db.session.commit()
+
+                    #Remove the shedule info in the session
+                    session.pop('schedule_details', None)
+                    return redirect(url_for('schedules'))
+                    
                 return redirect(url_for('index'))
             
             #Inserting in to database the data if if the user gives only the first name
@@ -237,10 +262,38 @@ def signup():
             #saving the email and name on session
             session['user_phone'] = phone
             session.permanent = True
+
+            if 'schedule_details' in session:
+                    #Asking if the user doesn't coming from scheduling --> login pages
+                    #
+    
+                    schedule_details = session['schedule_details']
+                    #Retrieving the schedule saved in the session from the schedule page
+
+                    user_id = db.session.execute(db.select(Users.id).filter_by(telefone=phone)).scalar_one()
+                        
+                    schedule = Schedules(
+                        servico = schedule_details['service'],
+                        data = schedule_details['date'],
+                        hora = schedule_details['time'],
+                        estabelecimento_id = schedule_details['establishment_id'],
+                        user_id = user_id
+                    )
+                    db.session.add(schedule)
+                    db.session.commit()
+
+                    #Remove the shedule info in the session
+                    session.pop('schedule_details', None)
+                    return redirect(url_for('schedules'))
+
             return redirect(url_for('index'))
         
     else:
         #if request.method == 'get'
+
+        if 'schedule_details' in session:
+            #if available a schedule saved in the session, write a message in the form
+            flash('Você está quase terminando, Crie uma conta para salvar a sua agenda!')
         return render_template("signup.html")
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -250,12 +303,20 @@ def login():
     #we are askin if we have the key: user_name in session
     #if true, it's not necessary tu put login info
     if 'user_phone' in session:
-        return redirect(url_for('index'))
+        phone = session['user_phone']
+        full_name = db.session.execute(db.select(Users.nome).filter_by(telefone=phone)).scalar_one()
+
+        #full_name = cursor.fetchone()[0]
+        first_name = full_name.split(' ')[0]
+        #print(full_name)
+        #print(first_name)
+        #askin if the user is loged in to show his name
+
+        return redirect(url_for("index"))
     
     elif request.method == 'POST':
         phone = request.form.get("phone")
         password = request.form.get("password")
-
         
         #cursor.execute("SELECT email, senha FROM users WHERE email == ? AND senha == ?", (email, password))
         #data = cursor.fetchall()
@@ -268,21 +329,56 @@ def login():
                 if (i[0], i[1]) == (phone, password):
                     #we verify if the given email and password is registered in database'
 
-                    #we save the session for future auto login
+                    #we save the user session for future auto login
                     session['user_phone'] = phone
                     session.permanent = True
-                    return redirect(url_for('index'))
+
+
+                    user_id = db.session.execute(db.select(Users.id).filter_by(telefone=phone)).scalar_one()
+                    
+                    if 'schedule_details' in  session:
+                        #we check if there has a schedule saved in the session
+                        # if true, then it means that the user comes from sheduling page and he isn't logged in
+
+                        schedule_details = session['schedule_details']
+                        #Retrieving the schedule saved in the session from the schedule page
+                        
+                        schedule = Schedules(
+                            servico = schedule_details['service'],
+                            data = schedule_details['date'],
+                            hora = schedule_details['time'],
+                            estabelecimento_id = schedule_details['establishment_id'],
+                            user_id = user_id
+                        )
+                        db.session.add(schedule)
+                        db.session.commit()
+
+                        #Remove the shedule info in the session
+                        session.pop('schedule_details', None)
+                        return redirect(url_for('schedules'))
+                    
+                    elif request.args.get('ask_login_from'):
+                        #User clicked on login button from a specific establishment page
+                        establishment_alias = request.args.get('ask_login_from')
+                        return redirect(url_for('establishment_page', establishment_alias=establishment_alias))
+
+                    # it means the user clicked the login button from the index page or via url direct
+                    return redirect(url_for("index"))
 
         elif not phone or not password:
             flash("Por favor, preencha todos os campos!")
             return render_template("login.html")
-                
         
-        flash("Telefone ou senha inválida!")
-        return redirect(url_for("login"))
+        
+        flash('Senha ou número de telefone inválido!')
+        return render_template('login.html')
         
     else:
         #executed if request.method == get
+
+        if 'schedule_details' in session:
+            flash('Você está quase terminando, inicie sessão para salvar a sua agenda!')
+            
         return render_template("login.html")
 
 #------------------ Establishment Registration: ----------------------------# 
@@ -291,7 +387,7 @@ def register_establishment():
 
     
     if request.method == 'POST':
-        Establishment_name = request.form.get('Establishment_name')
+        establishment_name = request.form.get('Establishment_name')
         alias = request.form.get('alias')
         welcome_msg = request.form.get('welcome_msg')
         open_hour = request.form.get('open_hour')
@@ -315,41 +411,31 @@ def register_establishment():
         for i in aliases:
             if i[0] == alias:
                 flash("Existe estabelecimento com mesmo apelido. Tente outro apelido!")
-                return render_template('establishment_registration.html')
+                return redirect(url_for('register_establishment'))
 
-        if not Establishment_name or not alias:
+        if not establishment_name or not alias:
             flash("Por favor, preencha o nome e apelido!")
             return render_template('establishment_registration.html')  
         
         else:
-            #Inserting in to database the data if if the user gives only the first name
-           # Establishment_name = Establishment_name.capitalize()
-            #cursor.execute("INSERT INTO users (nome, email, telefone, senha) VALUES (?, ?, ?, ?)", (name, email, phone, password))
-            #db.commit()
-            establishment = Establishments(
-                nome = Establishment_name,
-                apelido = alias,
-                msg_boas_vindas = welcome_msg,
-                horas_aberto = open_hour,
-                horas_fechado = close_hour,
-                dias_funcionamento = open_days,
-                bairro = burgh,
-                descricao_do_bairro = burgh_description,
-                provincia = province,
-                distrito = district,
-                telefone = phone
-                
-            )
-            db.session.add(establishment)
-            db.session.commit()
-
-            establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=alias)).scalar_one()
-
+            # if everything okay, we save the new establishment info into a dictionary
             transfer_data = {
-                'new_establishment_id': establishment_id,
-                'new_establishment_alias': alias
-
+                'new_establishment_alias': alias,
+                'new_establishment_name': establishment_name,
+                'welcome_msg': welcome_msg,
+                'open_hour': open_hour,
+                'close_hour': close_hour,
+                'open_days': open_days,
+                'burgh': burgh,
+                'burgh_description': burgh_description,
+                'province': province,
+                'district': district,
+                'phone': phone
             }
+            # transfer_data contain the information of the new establishment to be saved after providing other 
+            # informations like 'admin info' in the other page
+
+            session['new_establishment_data'] = transfer_data
             return render_template('admin_signup.html', transfer_data = transfer_data)
         
     else:
@@ -359,22 +445,50 @@ def register_establishment():
 @app.route("/sucessfully", methods=['get', 'post'])
 def new_establishment_sucessfully():
     if request.method == "POST":
+        #it's the main entrance method
 
-        #Adding the admin on the system:
-        establishment_id = request.form.get('establishment_id')
-        establishment_alias = request.form.get('establishment_alias')
+        # gathering the admin info from the admin_signup.html template embeded form
         admin_name = request.form.get('name')
-        admin_email = request.form.get('email')
+        #admin_email = request.form.get('email')
         admin_phone = request.form.get('phone')
         admin_password = request.form.get('password')
 
-        data = {
-            'name': admin_name,
-            'alias': establishment_alias,
-            'phone': admin_phone,
-            'password': admin_password
-        }
+        # Check admin in database
+        try:
+            existing_admin = db.session.execute(db.select(Admins.telefone).filter_by(telefone=admin_phone)).scalar_one()
 
+            if admin_phone == existing_admin:
+                flash('Existe esse administrador com o mesmo número de telefone. Tente com outro número!')
+                return render_template('admin_signup.html')
+        except:
+            pass
+        
+
+        ############Saving all colected data to establishments and Admins tables:##########
+
+        # first, saving about establishment
+        new_establishment_data = session['new_establishment_data'] # Retrieving the info saved in the register_establishment page
+
+        establishment = Establishments(
+            nome = new_establishment_data['new_establishment_name'],
+            apelido = new_establishment_data['new_establishment_alias'],
+            msg_boas_vindas = new_establishment_data['welcome_msg'],
+            horas_aberto = new_establishment_data['open_hour'],
+            horas_fechado = new_establishment_data['close_hour'],
+            dias_funcionamento = new_establishment_data['open_days'],
+            bairro = new_establishment_data['burgh'],
+            descricao_do_bairro = new_establishment_data['burgh_description'],
+            provincia = new_establishment_data['province'],
+            distrito = new_establishment_data['district'],
+            telefone = new_establishment_data['phone']
+            
+        )
+        session.pop('new_establishment_data', None)
+        db.session.add(establishment)
+        db.session.commit()
+
+        # Second, saving about the admin info:
+        establishment_id = db.session.execute(db.select(Establishments.id).filter_by(apelido=new_establishment_data['new_establishment_alias'])).scalar_one()
         new_admin = Admins(
             nome = admin_name,
             telefone = admin_phone,
@@ -384,7 +498,14 @@ def new_establishment_sucessfully():
 
         db.session.add(new_admin)
         db.session.commit()
-        return render_template('sucessfully_establishment_subscribed.html', data=data)
+
+        admin_and_establishment_data = {
+            'alias': new_establishment_data['new_establishment_alias'],
+            'phone': admin_phone,
+            'password': admin_password
+        }
+        return render_template('sucessfully_establishment_subscribed.html', data=admin_and_establishment_data)
+    
     return 'Em desenvolvimento'
 
 @app.route("/terminar_seccao")
@@ -489,9 +610,13 @@ def scheduling(establishment_alias):
                 'service': service,
                 'date': date,
                 'time': time,
-                'alias': establishment_alias
+                'establishment_id': establishment_id,
+                'establishment_alias': establishment_alias
                 }
-                return redirect(url_for('login', data=data))
+                #Saving the schedule info in the session to avoid losing during the signin or signup process
+                #After user log in or sigup, the schedule is retrieved from session in the login page
+                session['schedule_details'] = data
+                return redirect(url_for("login"))
             
             #here theuse is lgged in
             phone_in_session = session['user_phone']
@@ -696,7 +821,7 @@ def establishment_page(establishment_alias):
         #askin if the user is loged in to show his name
 
         return render_template("establishment.html", user= first_name, logout='sair', suas_agendas = 'Minhas Agendas', establishment_details=establishment_details, services=services)
-    return render_template("establishment.html", user='Entrar', establishment_details=establishment_details)
+    return render_template("establishment.html", user='Entrar', establishment_details=establishment_details, services=services)
     #return render_template('establishment.html',establishment_alias=establishment_alias, name=establishment, services=services)
 
 
@@ -845,7 +970,7 @@ def admin(establishment_alias):
                     #we verify if the given email and password is registered in database'
 
                     session['admin_phone'] = phone
-                    session.permanent = True
+                    
                     return render_template('admin.html', establishment_alias=establishment_alias)
 
         elif not phone or not password:
@@ -859,6 +984,7 @@ def admin(establishment_alias):
     else:
         #executed if request.method == get
         if 'admin_phone' in session:
+            
             phone = session['admin_phone']
 
             admin_id_belongs = db.session.execute(db.select(Admins.estabelecimento_id).filter_by(telefone=phone)).scalar_one()
@@ -866,13 +992,15 @@ def admin(establishment_alias):
                 #It means that the admin belongs to that establishment,
                 # because the estabelecimento_ saved with him is iguals to the current page id
 
-                #Gathering all the get query of admin pagr (list user, shedule...)
+                #Gathering all the get query of admin page (list user, shedule...)
                 list_employers = request.args.get('list_employers')
                 client_id = request.args.get('client_id')
                 client_name = request.args.get('client_name')
                 schedule_id = request.args.get('schedule_id')
-
                 employer_id = request.args.get('remove_employer')
+
+                new_service = request.args.get('new_service')
+                new_service_price = request.args.get('new_service_price')
 
 
 
@@ -886,10 +1014,10 @@ def admin(establishment_alias):
 
                 if list_employers:
                     #rendering employers
-                    table_title = 'Lista de Funcionarios'
+                    table_title = 'Lista de Funcionários'
 
                     #Getting the columns name
-                    columns_name = ('ID', 'Nome', 'Telefone', 'Email', 'Funcao', 'Contrato')
+                    columns_name = ('ID', 'Nome', 'Telefone', 'Email', 'Função', 'Contrato')
 
                     #cursor.execute("SELECT * FROM employers")
                     #employers = cursor.fetchall()
@@ -905,7 +1033,7 @@ def admin(establishment_alias):
                     try:
                         funcionario = db.session.execute(db.select(Employers).filter_by(id=employer_id, estabelecimento_id=establishment_id)).scalar_one()
                         nome = funcionario.nome
-                        table_title = 'Eliminado funcionario/a ' + nome
+                        table_title = 'Eliminado funcionário/a ' + nome
 
                         #cursor.execute("DELETE FROM employers WHERE id == ?", [employer_id])
                         #db.commit()
@@ -913,7 +1041,7 @@ def admin(establishment_alias):
                         db.session.commit()
                         return render_template("admin.html", table_title=table_title, establishment_alias=establishment_alias)
                     except:
-                        flash('Nao existe funcionrio com o id ' + employer_id)
+                        flash('Não existe funcionário com o id ' + employer_id)
                         return render_template("admin.html", establishment_alias=establishment_alias)
 
                 
@@ -949,7 +1077,7 @@ def admin(establishment_alias):
                     table_title = 'Consulta de agenda'
 
                     #Getting the columns name
-                    columns_name = ('ID agenda', 'Servico', 'Data', 'Hora', 'Cliente', 'Telefone')
+                    columns_name = ('ID agenda', 'Serviço', 'Data', 'Hora', 'Cliente', 'Telefone')
 
                     #cursor.execute("SELECT * FROM schedules WHERE id == ?", [schedule_id])
                     #schedules = cursor.fetchall()
@@ -957,9 +1085,36 @@ def admin(establishment_alias):
                     query = text(f"SELECT Schedules.id,  Schedules.servico, Schedules.data, Schedules.hora, Users.nome, Users.telefone FROM Schedules INNER JOIN users ON Schedules.user_id = Users.id WHERE Schedules.id = '{schedule_id}' AND estabelecimento_id = {establishment_id} ORDER BY data, hora DESC;")
                     schedules = db.session.execute(query).all()
                     if not schedules:
-                        flash('Nao tem nenhuma agenda com o id ' + schedule_id)
+                        flash('Não tem nenhuma agenda com o id ' + schedule_id)
                         return  render_template('admin.html', establishment_alias=establishment_alias)
                     return render_template("admin.html", table_title=table_title, columns_name=columns_name, data=schedules, establishment_alias=establishment_alias)
+                
+                elif new_service:
+                    #admin requested to add a new service
+                    try:
+                        existing_service = db.session.execute(db.select(Services.servico, Services.preco).filter_by(estabelecimento_id=establishment_id)).scalar()
+                        if existing_service:
+                            flash('Existe este serviço no seu estabelecimento! Você pode estar vendo esta mensagem por duas razoes: tentou adicionar um serviço que já tem no seu estabelecimento ou actualizou a pagina depois de adicionar um serviço.')
+                            return  render_template('admin.html', establishment_alias=establishment_alias)
+                    except:
+                        pass
+                    service = Services(
+                        servico = new_service,
+                        preco = new_service_price,
+                        estabelecimento_id = establishment_id
+                    )
+
+                    db.session.add(service)
+                    db.session.commit()
+
+                    table_title = 'Serviço adicionado com sucesso'
+
+                    #Getting the columns name
+                    columns_name = ('ID', 'Serviço', 'Preço')
+
+    
+                    services = db.session.execute(db.select(Services.id, Services.servico, Services.preco).filter_by(estabelecimento_id=establishment_id)).all()
+                    return render_template('admin.html', table_title=table_title, columns_name=columns_name, data=services)
         
         
         
@@ -974,7 +1129,7 @@ def subscribe_employer(establishment_alias):
         if not establishment_id:
             return redirect(url_for('admin'))
     except:
-        return 'URL invalida, verifique o enderco da url'
+        return 'URL inválida, verifique o endereço da url'
     
     if request.method == 'POST':
         name = request.form.get('name')
