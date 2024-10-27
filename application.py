@@ -1093,9 +1093,11 @@ def admin(establishment_alias):
                 
                 elif new_service:
                     #admin requested to add a new service
+
                     try:
+                        #num_rows_deleted = db.session.query(Services).delete()
+                        #db.session.commit()
                         existing_service = db.session.execute(db.select(Services.servico, Services.preco).filter_by(estabelecimento_id=establishment_id)).all()
-                        print(existing_service)
 
                         for i in existing_service:
                             srvc = str(i[0]) # covert service to string
@@ -1104,7 +1106,7 @@ def admin(establishment_alias):
                                 flash('Existe este serviço no seu estabelecimento! Você pode estar vendo esta mensagem por duas razões: tentou adicionar um serviço que já tem no seu estabelecimento ou actualizou a pagina depois de adicionar um serviço.')
                                 return  render_template('admin.html', establishment_alias=establishment_alias)
                     except:
-                        return (1)
+                        return '4'
                     service = Services(
                         servico = new_service,
                         preco = new_service_price,
@@ -1229,10 +1231,10 @@ def subscribe_employer(establishment_alias):
 
 
 if __name__ == "__main__":
-    '''
+
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
-'''
+
     
-    app.run(debug=True)
+    #app.run(debug=True)
