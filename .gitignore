@@ -1,0 +1,5 @@
+requires.txt
+*.docx
+test.html
+test.txt
+.gitignore.txt

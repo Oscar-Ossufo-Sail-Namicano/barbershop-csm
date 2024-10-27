@@ -1094,9 +1094,10 @@ def admin(establishment_alias):
                 elif new_service:
                     #admin requested to add a new service
                     try:
-                        existing_service = db.session.execute(db.select(Services.servico, Services.preco).filter_by(estabelecimento_id=establishment_id)).scalar()
-                        if existing_service:
-                            flash('Existe este serviço no seu estabelecimento! Você pode estar vendo esta mensagem por duas razoes: tentou adicionar um serviço que já tem no seu estabelecimento ou actualizou a pagina depois de adicionar um serviço.')
+                        existing_service = db.session.execute(db.select(Services.servico).filter_by(estabelecimento_id=establishment_id)).scalar_one()
+
+                        if existing_service == new_service:
+                            flash('Existe este serviço no seu estabelecimento! Você pode estar vendo esta mensagem por duas razões: tentou adicionar um serviço que já tem no seu estabelecimento ou actualizou a pagina depois de adicionar um serviço.')
                             return  render_template('admin.html', establishment_alias=establishment_alias)
                     except:
                         pass
