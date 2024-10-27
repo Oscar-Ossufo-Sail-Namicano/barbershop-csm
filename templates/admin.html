@@ -1,84 +1,136 @@
-{% extends 'layout.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block main %}
-    <section class="admin" style="margin-top: 2rem; background-color: white; color: black;">
-        <div class="interface";>
-            <div style="gap: 3rem;" class="flex" id="queries_container">
-                <div class="employers_query">
-                    <a href="{{url_for('subscribe_employer', establishment_alias=establishment_alias)}}" style="color: blue; font-display: block; border: solid 1px black; padding: 3px 10px;">Adicionar funcionário</a> <br><br>
-                    <form action="">
-                        <input style = "color: blue; border: solid 1px black; padding: 3px 10px; cursor: pointer;" type="submit" value="Listar funcionários" name="list_employers"><br><br>
-                    </form>
-                    <form action="">
-                        <label style="display: block;" for="id_remove_employer">Eliminar funcionário</label>
-                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="text" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
-                        <input style = "color: red; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Eliminar"><br><br>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta rel="shortcut icon" href="../static/icons/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="../static/css/styles.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <script src="../static/js/js.js" defer></script>
+        
+    <title>Moz Agendas</title>
+</head>
+<body style="background-color: #fff;">
 
-                    </form>
-                </div>
-                <!--
-                <div class="clients_query">
-                    <p>Pesquisa de clientes</p>
-                    <form action="">
-                        <label for="id_idcliente">Pesquisar por id</label>
-                        <input type="search" id="id_idcliente" name="client_id">
-                        <input type="submit" value="Pesquisar"><br><br>
-                    </form>
-                    <form action="">
-                        <label for="id_cliente_name">Pesquisar por nome</label>
-                        <input type="search" id="id_cliente_name" name="client_name">
-                        <input type="submit" value="Pesquisar">
-                    </form>
-                </div>
-            -->
-           
-                <div style="text-align: right;" class="schedules_query">
-                    <form action="">
-                        <label style="display: block;" for="idAddService">Adicionar serviço</label>
-                        <input style = "border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Nome do serviço" id="idAddService" name="new_service">
-                        <input style = "width: 4rem; display: inline-block; border: solid 1px black; padding: 3px 10px;" type="text" placeholder="preço" id="idService_price" name="new_service_price">
-                        <input style = "color: blue;  border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Adicionar"><br><br>
-                    </form>
-                    <form action="">
-                        <label style="display: block;" for="idagenda">Pesquisar uma agenda</label>
-                        <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Id. da agenda" id="idagenda" name="schedule_id">
-                        <input style = "color: blue; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Pesquisar">
-                    </form>
-                </div>
-            </div> <!--queries_container id end-->
-            
-            <div class="displayer_queris">
-                {% with messages = get_flashed_messages()[0] %}
-                    {% if messages %}
-                        <p style="text-align: center; font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
-                    {% endif %}
-                {% endwith %}
-                <p style="text-align: center;">{{ table_title }}</p>
-                <table class="table" style="font-size: xx-small;">
-                    <thead>
-                        
-                        <tr>
-                            {% for column_name in columns_name %}
-                                <td>{{ column_name }}</td>
-                            {% endfor %}
-                        </tr>
-                        
-                    </thead>
-                    <tbody>
-                        
-                        {% for element in data %}
-                        <tr>
-                                {% for table_data in element %}
-                                    <td>{{ table_data }}</td>
-                                {% endfor %}
-                            
-                        </tr>
-                        {% endfor %}
-                        
-                    </tbody>
-                </table>
+    <header>
+        <div class="navbar interface flex">
+            <div class="logo">
+                <a href="../static/images/logo.png" target="_blank"><img src="../static/images/logo.png" alt="logo csm"></a>
             </div>
-        </div>
+            <nav class="desktop_nav nav">
+                <ul>
+                    <li><a href="{{url_for('index')}}" class="nav_link">Home</a></li>
+                    <li><a href="/#services" class="nav_link">Nossos Serviços</a></li>
+                    <li><a href="/#packages" class="nav_link">Promoções</a></li>
+                    <li><a href="/#scheduling" class="nav_link">Agendamento</a></li>
+                    <li><a href="#contact" class="nav_link">Localize-nos</a></li>
+                </ul>
+            </nav> <!--Desktop menu end-->
 
-    </section>
-{% endblock %}
+            <div class="menu-symbol" id="menu-symbol">
+                <i class="bi bi-list"></i>
+            </div>
+
+            <div class="mobile-menu" id="mobile-menu">
+                <div class="close-menu-button">
+                    <i class="bi bi-x-lg"></i>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="/" class="nav_link">Home</a></li>
+                        <li><a href="/#services" class="nav_link">Nossos Serviços</a></li>
+                        <li><a href="/#packages" class="nav_link">Promoções</a></li>
+                        <li><a href="/#scheduling" class="nav_link">Agendamento</a></li>
+                    </ul>
+                </nav>
+            </div> <!--mobile menu end-->
+            <!--<div class="overlay-box"></div>-->
+
+        </div> <!--navbar end-->
+    </header><main>
+        
+        <section class="admin" style="margin-top: 2rem; background-color: white; color: black;">
+            <div class="interface";>
+                <div style="gap: 3rem;" class="flex" id="queries_container">
+                    <div class="employers_query">
+                        <a href="{{url_for('subscribe_employer', establishment_alias=establishment_alias)}}" style="color: blue; font-display: block; border: solid 1px black; padding: 3px 10px;">Adicionar funcionário</a> <br><br>
+                        <form action="">
+                            <input style = "color: blue; border: solid 1px black; padding: 3px 10px; cursor: pointer;" type="submit" value="Listar funcionários" name="list_employers"><br><br>
+                        </form>
+                        <form action="">
+                            <label style="display: block;" for="id_remove_employer">Eliminar funcionário</label>
+                            <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="text" id="id_remove_employer" name="remove_employer" placeholder="Inserir id">
+                            <input style = "color: red; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Eliminar"><br><br>
+                        </form>
+                    </div>
+                    <!--
+                    <div class="clients_query">
+                        <p>Pesquisa de clientes</p>
+                        <form action="">
+                            <label for="id_idcliente">Pesquisar por id</label>
+                            <input type="search" id="id_idcliente" name="client_id">
+                            <input type="submit" value="Pesquisar"><br><br>
+                        </form>
+                        <form action="">
+                            <label for="id_cliente_name">Pesquisar por nome</label>
+                            <input type="search" id="id_cliente_name" name="client_name">
+                            <input type="submit" value="Pesquisar">
+                        </form>
+                    </div>
+                -->
+        
+                    <div style="text-align: right;" class="schedules_query">
+                        <form action="">
+                            <label style="display: block;" for="idAddService">Adicionar serviço</label>
+                            <input style = "border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Nome do serviço" id="idAddService" name="new_service">
+                            <input style = "width: 4rem; display: inline-block; border: solid 1px black; padding: 3px 10px;" type="text" placeholder="preço" id="idService_price" name="new_service_price">
+                            <input style = "color: blue;  border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Adicionar"><br><br>
+                        </form>
+                        <form action="">
+                            <label style="display: block;" for="idagenda">Pesquisar uma agenda</label>
+                            <input style = "color: red; border: solid 1px black; padding: 3px 10px;" type="search" placeholder="Id. da agenda" id="idagenda" name="schedule_id">
+                            <input style = "color: blue; border: solid 1px black; padding: 3px 10px; margin-top: 4px; cursor: pointer;" type="submit" value="Pesquisar">
+                        </form>
+                    </div>
+                </div> <!--queries_container id end-->
+        
+                <div class="displayer_queris">
+                    {% with messages = get_flashed_messages()[0] %}
+                        {% if messages %}
+                            <p style="text-align: center; font-size: smaller; color: rgb(205, 0, 0);">{{ messages }}</p>
+                        {% endif %}
+                    {% endwith %}
+                    <p style="text-align: center; margin-bottom: 1rem;">{{ table_title }}</p>
+                    <table class="table" style="font-size: x-small;">
+                        <thead>
+        
+                            <tr>
+                                {% for column_name in columns_name %}
+                                    <td>{{ column_name }}</td>
+                                {% endfor %}
+                            </tr>
+        
+                        </thead>
+                        <tbody>
+        
+                            {% for element in data %}
+                            <tr>
+                                    {% for table_data in element %}
+                                        <td>{{ table_data }}</td>
+                                    {% endfor %}
+        
+                            </tr>
+                            {% endfor %}
+        
+                        </tbody>
+                    </table>
+                </div><br>
+            </div>
+        </section>
+    </main>
+</body>
+    
+</html>
