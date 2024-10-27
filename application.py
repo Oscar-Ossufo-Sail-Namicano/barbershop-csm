@@ -789,8 +789,9 @@ def establishment_page(establishment_alias):
     #Loading all services of the establisment to fill in the establisment page on the services section
     services = db.session.execute(db.select(Services.servico).filter_by(estabelecimento_id=establishment_id)).all()
     #Other informations of the establishment
-    query = text(f"SELECT * FROM Establishments WHERE apelido == '{establishment_alias}'")
+    query = text(f"SELECT * FROM Establishments WHERE apelido = '{establishment_alias}'")
     establishment = db.session.execute(query).all()
+    
     for detail in establishment:
         establishment_details = {
             'name': detail[1],
@@ -1223,6 +1224,7 @@ def subscribe_employer(establishment_alias):
 
 
 if __name__ == "__main__":
+
     port = int(os.getenv('PORT'), '5000')
     #We are getting the port where our server is running, else we use the 5000
     app.run(host='0.0.0.0', port=port)
